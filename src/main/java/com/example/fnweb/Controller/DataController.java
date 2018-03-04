@@ -29,6 +29,8 @@ import java.util.*;
 @Controller
 public class DataController {
 
+    String resultEntity = null;
+
     @Autowired
     private DeviceMapper deviceMapper;
 
@@ -73,6 +75,13 @@ public class DataController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/getLoc",method = RequestMethod.GET)
+    public String getLoc(){
+
+        return resultEntity;
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/loc",method = RequestMethod.POST)
     public String getUserLoc(ApEntity apEntity) {
         RpEntity rpEntity = new RpEntity();
@@ -96,6 +105,7 @@ public class DataController {
         }else{
             return null;
         }
+        resultEntity = rpEntity.getLocString();
         return rpEntity.getLocString();
     }
 }

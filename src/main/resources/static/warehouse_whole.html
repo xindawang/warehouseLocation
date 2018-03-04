@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>成仓</title>
+</head>
+<body>
+    <div id="background">
+        <img src="image/warehouse_whole.png" width="95%" height="95%" style="position: absolute; z-index: -1">
+    </div>
+
+</body>
+<script src="lib/jquery-2.1.4.min.js"></script>
+<script src="lib/fengmap.min.js"></script>
+<script>
+    $(function () {
+        $.ajax({
+            url: "/getLoc",
+            type: "get",
+            success: function (result) {
+                var loc = result.split(",");
+                $("#background").append('<img src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
+            }
+        });
+    })
+</script>
+</html>

@@ -57,4 +57,27 @@ public class PointStoreService {
         }
         return true;
     }
+
+    public void insertTestLoc(){
+        PointLocEntity pointLocEntity;
+        for (int i = 1; i < 70; i++) {
+            pointLocEntity = new PointLocEntity();
+            if (i<48) {
+                pointLocEntity.setPoint_name("h" + i);
+                pointLocEntity.setLeftpx((int)Math.round(30 + (i - 1) * 23.7));
+                pointLocEntity.setToppx(120);
+            }else if (i<59){
+                pointLocEntity.setPoint_name("rv" + (i-47));
+                pointLocEntity.setLeftpx(400);
+                pointLocEntity.setToppx(160+(i-48)*22);
+            }else{
+                pointLocEntity.setPoint_name("lv" + (i-58));
+                pointLocEntity.setLeftpx(745);
+                pointLocEntity.setToppx(160+(i-59)*22);
+            }
+            System.out.println(pointLocEntity.getPoint_name()+" "
+                    + pointLocEntity.getLeftpx()+" "+ pointLocEntity.getToppx());
+            pointLocMapper.insertTestLoc(pointLocEntity);
+        }
+    }
 }

@@ -7,6 +7,25 @@ public class PointLocEntity {
     private String point_name;
     private Integer x;
     private Integer y;
+
+    public Integer getLeftpx() {
+        return leftpx;
+    }
+
+    public void setLeftpx(Integer leftpx) {
+        this.leftpx = leftpx;
+    }
+
+    public Integer getToppx() {
+        return toppx;
+    }
+
+    public void setToppx(Integer toppx) {
+        this.toppx = toppx;
+    }
+
+    private Integer leftpx;
+    private Integer toppx;
     private Double bayesResult;
 
     public String getPoint_name() {

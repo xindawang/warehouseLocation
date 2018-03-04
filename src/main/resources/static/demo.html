@@ -6,7 +6,8 @@
 </head>
 <body>
     <div id="background">
-        <img src="image/warehouse_whole.png" width="95%" height="95%" style="position: absolute; z-index: -1">
+        <img src="image/demo.png" width="95%" height="95%" style="position: absolute; z-index: -1">
+        <img src="image/location.png" width="64" height="64" style="margin-left:30px;margin-top:50px">
     </div>
 
 </body>
@@ -19,7 +20,7 @@
             type: "get",
             success: function (result) {
                 var loc = result.split(",");
-                $("#background").append('<img src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
+//                $("#background").append('<img src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
             }
         });
     })

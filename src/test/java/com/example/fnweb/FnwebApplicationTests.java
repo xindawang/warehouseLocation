@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class FnwebApplicationTests {
@@ -30,18 +32,18 @@ public class FnwebApplicationTests {
 
 	@Test
 	public void getRssiInfo(){
-		RpEntity rpEntity = new RpEntity();
-
-
-		naiveBayesService.getLocByBayes(rpEntity);
-//		DeviceEntity deviceEntity = new DeviceEntity();
-//		deviceEntity.setDevice_id(11);
-//		knnService.getLocByKnn(rpEntity,deviceEntity,5);
+		List<RpEntity> rpList = knnService.getRssiEntityFromTxt("E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt");
+		System.out.println(rpList);
 	}
 
 	@Test
 	public void insertPointLoc2(){
 		pointStoreService.insertPointLoc();
+	}
+
+	@Test
+	public void insertTestLoc(){
+		pointStoreService.insertTestLoc();
 	}
 
 }

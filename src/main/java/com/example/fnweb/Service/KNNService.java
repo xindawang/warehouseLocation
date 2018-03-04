@@ -33,6 +33,7 @@ public class KNNService {
 
     boolean useDatabase = false;
 
+
     public void getLocByKnn(RpEntity rpEntity, DeviceEntity deviceEntity){
 
         //appoint the number of minimum AP point
@@ -118,7 +119,15 @@ public class KNNService {
         return rpEntities;
     }
 
-    private List<RpEntity> getRssiEntityFromTxt(String filename){
+    public List<RpEntity> getRssiEntityFromTxt(String filename){
+
+        HashMap<String, String> changeName = new HashMap<>();
+        changeName.put("Four-Faith-2", "ap1");
+        changeName.put("Four-Faith-3", "ap2");
+        changeName.put("TP-LINK_E7D2", "ap3");
+        changeName.put("TP-LINK_3625", "ap4");
+        changeName.put("TP-LINK_3051", "ap5");
+
         List<RpEntity> rpEntities = new ArrayList<>();
         try {
             FileReader reader = new FileReader(filename);
@@ -131,9 +140,11 @@ public class KNNService {
                 String[] eachRpSet = str.split(";");
                 for (int i=0;i< eachRpSet.length;i++) {
                     String[] eachAp = eachRpSet[i].split(" ");
-                    apEntities.put(eachAp[0],Float.valueOf(eachAp[1]));
+                    apEntities.put(changeName.get(eachAp[0]),Float.valueOf(eachAp[1]));
                 }
-                rpEntity.setPoint("A"+count);
+                if (count < 48) rpEntity.setPoint("h"+count);
+                else if (count < 59) rpEntity.setPoint("rv"+(count-47));
+                else rpEntity.setPoint("lv"+(count-58));
                 rpEntity.setApEntities(apEntities);
                 rpEntities.add(rpEntity);
                 str = br.readLine();

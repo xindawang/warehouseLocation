@@ -29,4 +29,7 @@ public interface PointLocMapper {
 
     @Insert("insert into point_loc2 (point_name,x,y) values (#{point_name},#{x},#{y})")
     Boolean insertPointLoc2(PointLocEntity pointLocEntity);
+
+    @Insert("insert into point_warehouse (point_name,leftpx,toppx) values (#{point_name},#{leftpx},#{toppx})")
+    Boolean insertTestLoc(PointLocEntity pointLocEntity);
 }

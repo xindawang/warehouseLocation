@@ -5,24 +5,111 @@
     <title>成仓</title>
 </head>
 <body>
-    <div id="background">
-        <img src="image/demo.png" width="95%" height="95%" style="position: absolute; z-index: -1">
-        <img src="image/location.png" width="64" height="64" style="margin-left:30px;margin-top:50px">
+    <div id="background" width="1216" height="560.5">
+        <img id="demo" hidden src="image/demo.png" width="95%" height="95%" style="position: absolute; z-index: -1">
+        <!--<img src="image/location.png" width="64" height="64" style="margin-left:745px;margin-top:380px">-->
+        <canvas id="canvas" width="1216" height="560.5" style="position: absolute; z-index: -1;">您当前的版本不支持</canvas>
+
+        <input id="viewLoc" type="button" class="btn btn-primary" value="查看位置" style="margin-left: 400px;margin-top: 480px;position: absolute; z-index: 1;" >
+        <input id="viewPath" type="button" class="btn btn-primary" value="查看路径" style="margin-left: 600px;margin-top: 480px;position: absolute; z-index: 1;" >
+        <input id="clearData" type="button" class="btn btn-primary" value="清空数据" style="margin-left: 800px;margin-top: 480px;position: absolute; z-index: 1;" >
+
     </div>
+
 
 </body>
 <script src="lib/jquery-2.1.4.min.js"></script>
+<script src="lib/bootstrap.min.js"></script>
+<link type="text/css" href="lib/bootstrap.min.css" rel="stylesheet">
 <script src="lib/fengmap.min.js"></script>
 <script>
     $(function () {
-        $.ajax({
-            url: "/getLoc",
-            type: "get",
-            success: function (result) {
-                var loc = result.split(",");
-//                $("#background").append('<img src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
-            }
+
+        initCanvas();
+
+        //查看位置
+        $("#viewLoc").click(function(){
+            $("#background img").remove();
+            $.ajax({
+                url: "/getLoc",
+                type: "get",
+                success: function (result) {
+                    var loc = result.split(",");
+                    $("#background").append('<img src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
+                }
+            });
         });
+
+        $("#viewPath").click(function(){
+            initCanvas();
+            drawLine(30,120,1000,120);
+        });
+
+        //初始化画板
+        var canvas,context,img;
+        function initCanvas() {
+            canvas=document.getElementById('canvas');
+            canvas.width = canvas.width
+            context=canvas.getContext("2d");
+            img= document.getElementById('demo');
+            context.drawImage(img,0,0,1216,560.5);
+        }
+
+        //初始化绘图参数，设置为全局
+        var startLeft,startTop,endLeft,endTop,curLeft,curTop,moveLeft,moveTop,start;
+
+        //修正路线位置
+        function ml(px){
+            return px+32
+        }
+
+        function mt(px){
+            return px+64
+        }
+
+        function step(timestamp) {
+            if (!start) start = timestamp;
+            var progress = timestamp - start;
+            if (curLeft<endLeft) curLeft=curLeft+moveLeft;
+            if (curTop<endTop) curTop =curTop +moveTop;
+
+            context.lineTo(ml(curLeft),mt(curTop));
+            context.lineWidth = 4;//线条的宽度
+            context.strokeStyle = "#2238f0"
+            context.stroke();
+
+            if (curLeft < endLeft || curTop < endTop) {
+                window.requestAnimationFrame(step);
+            }else{
+                drawPoint(endLeft,endTop);
+            }
+        }
+
+        function drawPoint(pointLeft,pointTop) {
+            context.fillStyle="#FF0000";
+            context.arc(ml(pointLeft),mt(pointTop),5,0,Math.PI*2,true);
+            context.fill();
+        }
+
+        function drawLine(sLeft,sTop,eLeft,eTop) {
+            startLeft = sLeft;
+            startTop = sTop;
+            endLeft = eLeft;
+            endTop = eTop;
+            curLeft = startLeft;
+            curTop = startTop;
+
+            if (endLeft>startLeft) moveLeft = 10;
+            else if (endLeft<startLeft)moveLeft = -10;
+            if (endTop>startTop) moveTop = 10;
+            else if (endTop<startTop)moveTop = -10;
+
+            drawPoint(startLeft,startTop);
+            context.moveTo(ml(startLeft),mt(startTop));
+            window.requestAnimationFrame(step);
+        }
+
     })
+
 </script>
 </html>

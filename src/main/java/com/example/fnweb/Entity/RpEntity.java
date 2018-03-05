@@ -8,12 +8,36 @@ import java.util.HashSet;
  */
 public class RpEntity {
     private Integer id;
-    private Integer device_id;
     private HashMap<String, Float> apEntities;
     private String point_name;
     private Double knnResult;
-    private Double x;
-    private Double y;
+    private Integer leftpx;
+
+    public String getPoint_name() {
+        return point_name;
+    }
+
+    public void setPoint_name(String point_name) {
+        this.point_name = point_name;
+    }
+
+    public Integer getLeftpx() {
+        return leftpx;
+    }
+
+    public void setLeftpx(Integer leftpx) {
+        this.leftpx = leftpx;
+    }
+
+    public Integer getToppx() {
+        return toppx;
+    }
+
+    public void setToppx(Integer toppx) {
+        this.toppx = toppx;
+    }
+
+    private Integer toppx;
 
     public Integer getId() {
         return id;
@@ -21,14 +45,6 @@ public class RpEntity {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Integer getDevice_id() {
-        return device_id;
-    }
-
-    public void setDevice_id(Integer device_id) {
-        this.device_id = device_id;
     }
 
     public String getPoint() {
@@ -47,22 +63,6 @@ public class RpEntity {
         this.knnResult = knnResult;
     }
 
-    public Double getX() {
-        return x;
-    }
-
-    public void setX(Double x) {
-        this.x = x;
-    }
-
-    public Double getY() {
-        return y;
-    }
-
-    public void setY(Double y) {
-        this.y = y;
-    }
-
     public HashMap<String, Float> getApEntities() {
         return apEntities;
     }
@@ -72,6 +72,6 @@ public class RpEntity {
     }
 
     public String getLocString(){
-        return this.getX()+","+this.getY();
+        return this.getLeftpx()+","+this.getToppx();
     }
 }

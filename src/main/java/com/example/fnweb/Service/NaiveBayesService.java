@@ -88,10 +88,8 @@ public class NaiveBayesService {
         }
 
         //convert the format of location info according to how it store into database in knnService
-        double result_x = x/Math.pow(10,7) + 12735839;
-        double result_y = y/Math.pow(10,7) + 3569534;
-        resultRpEntity.setX(result_x);
-        resultRpEntity.setY(result_y);
+        resultRpEntity.setLeftpx((int)x);
+        resultRpEntity.setToppx((int)y);
         return resultRpEntity;
     }
 

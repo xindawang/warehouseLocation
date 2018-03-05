@@ -141,7 +141,6 @@ public class DataStoreService {
             String str=br.readLine();
             while(str != null&& !str.contains("*")) {
                 RpEntity rpEntity = new RpEntity();
-                rpEntity.setDevice_id(deviceId);
                 rpEntity.setPoint(str.trim());
                 str=br.readLine();
                 String [] eachPoint = str.split(";");

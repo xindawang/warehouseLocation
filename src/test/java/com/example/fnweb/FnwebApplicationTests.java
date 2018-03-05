@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
@@ -45,5 +46,21 @@ public class FnwebApplicationTests {
 	public void insertTestLoc(){
 		pointStoreService.insertTestLoc();
 	}
+
+	@Test
+	public void getTestLoc(){
+		RpEntity rpEntity = new RpEntity();
+		HashMap<String,Float> apentities = new HashMap<>();
+		apentities.put("ap1",Float.valueOf(-55));
+		apentities.put("ap2",Float.valueOf(-48));
+		apentities.put("ap3",Float.valueOf(-45));
+		apentities.put("ap4",Float.valueOf(-46));
+		apentities.put("ap5",Float.valueOf(-49));
+		rpEntity.setApEntities(apentities);
+		knnService.getLocByKnn(rpEntity);
+		System.out.println(rpEntity);
+	}
+
+
 
 }

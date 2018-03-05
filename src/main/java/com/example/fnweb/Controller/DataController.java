@@ -86,19 +86,15 @@ public class DataController {
     public String getUserLoc(ApEntity apEntity) {
         RpEntity rpEntity = new RpEntity();
         HashMap<String,Float> apentities = new HashMap<>();
-        if (apEntity.getAbc1()!=null) apentities.put("abc1",Float.valueOf(apEntity.getAbc1()));
-        if (apEntity.getAbc2()!=null) apentities.put("abc2",Float.valueOf(apEntity.getAbc2()));
-        if (apEntity.getAbc3()!=null) apentities.put("abc3",Float.valueOf(apEntity.getAbc3()));
-        if (apEntity.getAbc4()!=null) apentities.put("abc4",Float.valueOf(apEntity.getAbc4()));
-        if (apEntity.getAbc5()!=null) apentities.put("abc5",Float.valueOf(apEntity.getAbc5()));
-        if (apEntity.getAbc6()!=null) apentities.put("abc6",Float.valueOf(apEntity.getAbc6()));
-        if (apEntity.getAbc7()!=null) apentities.put("abc7",Float.valueOf(apEntity.getAbc7()));
-        if (apEntity.getAbc8()!=null) apentities.put("abc8",Float.valueOf(apEntity.getAbc8()));
-        if (apEntity.getAbc9()!=null) apentities.put("abc9",Float.valueOf(apEntity.getAbc9()));
+        if (apEntity.getAp1()!=null) apentities.put("ap1",Float.valueOf(apEntity.getAp1()));
+        if (apEntity.getAp2()!=null) apentities.put("ap2",Float.valueOf(apEntity.getAp2()));
+        if (apEntity.getAp3()!=null) apentities.put("ap3",Float.valueOf(apEntity.getAp3()));
+        if (apEntity.getAp4()!=null) apentities.put("ap4",Float.valueOf(apEntity.getAp4()));
+        if (apEntity.getAp5()!=null) apentities.put("ap5",Float.valueOf(apEntity.getAp5()));
         rpEntity.setApEntities(apentities);
         if (apEntity.getAlgorithm()!=null) {
             if (apEntity.getAlgorithm().equals("knn")) {
-                knnService.getLocByKnn(rpEntity,null);
+                knnService.getLocByKnn(rpEntity);
             }else if (apEntity.getAlgorithm()=="bayes") {
                 naiveBayesService.getLocByBayes(rpEntity);
             }

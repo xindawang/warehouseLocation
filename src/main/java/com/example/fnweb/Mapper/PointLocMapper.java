@@ -18,6 +18,9 @@ public interface PointLocMapper {
     @Select("select * from point_loc2 where point_name=#{pointName}")
     PointLocEntity getPointLoc2InfoByName(String pointName);
 
+    @Select("select * from point_warehouse where point_name=#{pointName}")
+    PointLocEntity getTestLocInfoByName(String pointName);
+
     @Select("select * from point_loc where point_name=#{point_name}")
     PointLocEntity getPointLocInfoByEntity(PointLocEntity pointLocEntity);
 

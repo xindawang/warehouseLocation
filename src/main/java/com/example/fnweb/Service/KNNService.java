@@ -29,53 +29,92 @@ public class KNNService {
     @Autowired
     private PointLocMapper pointLocMapper;
 
-    private int k = 5;
+    private int k = 3;
 
     boolean useDatabase = false;
 
+    private String fileName = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt";
 
-    public void getLocByKnn(RpEntity rpEntity, DeviceEntity deviceEntity){
+    public void getLocByKnn(RpEntity rpEntity){
 
         //appoint the number of minimum AP point
-        List<RpEntity> rpList;
-        if (useDatabase)  rpList= rpMapper.getRssiInfoByDeviceId(deviceEntity);
-        else rpList = getRssiEntityFromTxt("d:\\data.txt");
-        RpEntity[] rpEntities = getMinK(rpEntity,rpList,5);
-        PointLocEntity[] pointLocEntities = getRelPointInfo(rpEntities,k);
+        List<RpEntity> rpList = getRssiEntityFromTxt(fileName);
+
+        List<RpEntity> rpListOfH = rpList.subList(0,46);
+        List<RpEntity> rpListOfRv = rpList.subList(47,57);
+        List<RpEntity> rpListOfLv = rpList.subList(58,68);
+
+        RpEntity[] rpEntitiesH = getMinK(rpEntity,rpListOfH);
+        RpEntity[] rpEntitiesRv = getMinK(rpEntity,rpListOfRv);
+        RpEntity[] rpEntitiesLv = getMinK(rpEntity,rpListOfLv);
+
+        RpEntity[] rpEntities;
+
+        List<RpEntity[]> rpListEntities = new ArrayList<>();
+        rpListEntities.add(rpEntitiesRv);
+        rpListEntities.add(rpEntitiesLv);
+
+        rpEntities = rpEntitiesH;
+        for (RpEntity[] r:rpListEntities) {
+            if (getDif(r,rpEntity)< getDif(rpEntities,rpEntity))
+            rpEntities = r;
+        }
+
+        PointLocEntity[] pointLocEntities = getRelPointInfo(rpEntities);
         double sum = 0, x=0, y=0;
 
         //calculate the sum of k rp
         for (int i = 0; i <rpEntities.length ; i++) {
+            if (rpEntities[i].getKnnResult()!= 0)
             sum += 1/rpEntities[i].getKnnResult();
         }
 
         //get ratio and location info of each point and add up for the result
         for (int i = 0; i <rpEntities.length ; i++) {
-            double ratio = 1/rpEntities[i].getKnnResult()/sum;
-            int point_x = pointLocEntities[i].getX();
-            int point_y = pointLocEntities[i].getY();
-            x += ratio * point_x;
-            y += ratio * point_y;
+            if (rpEntities[i].getKnnResult()!= 0) {
+                double ratio = 1 / rpEntities[i].getKnnResult() / sum;
+                int point_x = pointLocEntities[i].getLeftpx();
+                int point_y = pointLocEntities[i].getToppx();
+                x += ratio * point_x;
+                y += ratio * point_y;
+            }else {
+                x = pointLocEntities[i].getLeftpx();
+                y = pointLocEntities[i].getToppx();
+                break;
+            }
         }
 
         //convert the format of location info according to how it store into database
-        double result_x = x/Math.pow(10,7) + 12735839;
-        double result_y = y/Math.pow(10,7) + 3569534;
-        rpEntity.setX(result_x);
-        rpEntity.setY(result_y);
+        rpEntity.setLeftpx((int)Math.round(x));
+        rpEntity.setToppx((int)Math.round(y));
+    }
+
+    private double getDif(RpEntity[] rpEntities, RpEntity rpEntity) {
+        double result = 0;
+        int commonCount = 0;
+        for (int i = 0; i < k; i++) {
+            for (String apName: rpEntity.getApEntities().keySet()) {
+                if (rpEntities[i].getApEntities().containsKey(apName)) {
+                    result += Math.sqrt(Math.abs(rpEntities[i].getApEntities().get(apName) - rpEntity.getApEntities().get(apName)));
+                    commonCount++;
+                }
+            }
+        }
+        if (commonCount>0) result /= commonCount;
+        return result;
     }
 
     //get all the point location information from database
-    private PointLocEntity[] getRelPointInfo(RpEntity[] rpEntities, int k) {
+    private PointLocEntity[] getRelPointInfo(RpEntity[] rpEntities) {
         PointLocEntity[] pointLocEntity = new PointLocEntity[k];
         int i = 0 ;
         for (RpEntity rpEntity :rpEntities) {
-            pointLocEntity[i++]=pointLocMapper.getPointLoc2InfoByName(rpEntity.getPoint());
+            pointLocEntity[i++]=pointLocMapper.getTestLocInfoByName(rpEntity.getPoint());
         }
         return pointLocEntity;
     }
 
-    public RpEntity[] getMinK(RpEntity rpEntity, List<RpEntity> rpEntityList, int k){
+    public RpEntity[] getMinK(RpEntity rpEntity, List<RpEntity> rpEntityList){
         //get rp info from database according to the given device_id
 
         //initialize big top heap
@@ -84,10 +123,14 @@ public class KNNService {
 
         for (RpEntity singleRp : rpEntityList){
             double result = 0;
-            for (String apName: singleRp.getApEntities().keySet()) {
-                result += Math.sqrt(Math.abs(singleRp.getApEntities().get(apName) - rpEntity.getApEntities().get(apName)));
+            int commonCount = 0;
+            for (String apName: rpEntity.getApEntities().keySet()) {
+                if (singleRp.getApEntities().containsKey(apName)) {
+                    result += Math.sqrt(Math.abs(singleRp.getApEntities().get(apName) - rpEntity.getApEntities().get(apName)));
+                    commonCount++;
+                }
             }
-
+            if (commonCount>0) result /= commonCount;
             singleRp.setKnnResult(result);
             if(curNum < k) minK[curNum++] = singleRp;
             else if (singleRp.getKnnResult() < minK[0].getKnnResult()){

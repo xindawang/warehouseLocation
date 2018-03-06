@@ -51,16 +51,20 @@ public class FnwebApplicationTests {
 	public void getTestLoc(){
 		RpEntity rpEntity = new RpEntity();
 		HashMap<String,Float> apentities = new HashMap<>();
-		apentities.put("ap1",Float.valueOf(-55));
-		apentities.put("ap2",Float.valueOf(-48));
-		apentities.put("ap3",Float.valueOf(-45));
+		apentities.put("ap1",Float.valueOf(-53));
+		apentities.put("ap2",Float.valueOf(-42));
+		apentities.put("ap3",Float.valueOf(-51));
 		apentities.put("ap4",Float.valueOf(-46));
-		apentities.put("ap5",Float.valueOf(-49));
+		apentities.put("ap5",Float.valueOf(-47));
 		rpEntity.setApEntities(apentities);
 		knnService.getLocByKnn(rpEntity);
-		System.out.println(rpEntity);
+		System.out.println(rpEntity.getLocString());
 	}
 
 
+	@Test
+	public void getPrecision(){
+		knnService.getPrecision();
+	}
 
 }

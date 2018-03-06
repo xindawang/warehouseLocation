@@ -30,6 +30,8 @@ import java.util.*;
 public class DataController {
 
     String resultEntity = null;
+    LinkedHashMap<Integer,String> allRecord = new LinkedHashMap<>();
+    int count = 0;
 
     @Autowired
     private DeviceMapper deviceMapper;
@@ -82,6 +84,19 @@ public class DataController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/getAllRecord",method = RequestMethod.GET)
+    public HashMap<Integer,String> getAllRecord(){
+        allRecord.clear();
+        count =0 ;
+        allRecord.put(count++,"40,120");
+        allRecord.put(count++,"200,120");
+        allRecord.put(count++,"600,120");
+        allRecord.put(count++,"1000,120");
+
+        return allRecord;
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/loc",method = RequestMethod.POST)
     public String getUserLoc(ApEntity apEntity) {
         RpEntity rpEntity = new RpEntity();
@@ -102,6 +117,7 @@ public class DataController {
             return null;
         }
         resultEntity = rpEntity.getLocString();
+        allRecord.put(count++,resultEntity);
         return rpEntity.getLocString();
     }
 }

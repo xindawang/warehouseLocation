@@ -13,14 +13,6 @@ public class RpEntity {
     private Double knnResult;
     private Integer leftpx;
 
-    public String getPoint_name() {
-        return point_name;
-    }
-
-    public void setPoint_name(String point_name) {
-        this.point_name = point_name;
-    }
-
     public Integer getLeftpx() {
         return leftpx;
     }

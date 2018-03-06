@@ -42,8 +42,41 @@
 
         $("#viewPath").click(function(){
             initCanvas();
-            drawLine(30,120,1000,120);
+            $.ajax({
+                url: "/getAllRecord",
+                type: "get",
+                success: function (result) {
+                    console.log(result)
+                    handleResultArray(result)
+                }
+            });
+//            drawLine(30,120,1000,120);
         });
+
+        function handleResultArray(result){
+            var startLeft,startTop,endLeft,endTop;
+            var isFirst = true;
+
+            if (Object.getOwnPropertyNames(result).length>1){
+                for (var r in result){
+                    var point = result[r].split(",");
+                    if (isFirst){
+                        startLeft = point[0];
+                        startTop = point[1];
+                        isFirst = false;
+                    }else{
+                        endLeft = point[0];
+                        endTop = point[1];
+//                        drawLine(parseInt(startLeft),parseInt(startTop),parseInt(endLeft),parseInt(endTop));
+                        drawLine(30,120,1000,120);
+                        startLeft = endLeft;
+                        startTop = endTop;
+                    }
+                }
+            }else{
+                alert("数据点不足!")
+            }
+        }
 
         //初始化画板
         var canvas,context,img;

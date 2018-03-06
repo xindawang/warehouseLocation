@@ -32,13 +32,31 @@ public class KNNService {
     private int k = 3;
 
     boolean useDatabase = false;
+    HashMap<String, String> changeName = new HashMap<>();
 
-    private String fileName = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt";
+    private String data1 = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt";
+    private String data2 = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\2.txt";
+
+    //计算误差
+    public void getPrecision(){
+        List<RpEntity> rpList = getRssiEntityFromTxt(data1);
+        float horizontalDeviation = 0;
+        float verticalDeviation = 0;
+        PointLocEntity pointLocEntity;
+        for (int i = 0; i < 69; i++) {
+            getLocByKnn(rpList.get(i));
+            pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i).getPoint());
+            horizontalDeviation += rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx();
+            verticalDeviation += rpList.get(i).getToppx()-pointLocEntity.getToppx();
+        }
+        System.out.println(Math.abs(horizontalDeviation/69));
+        System.out.println(Math.abs(verticalDeviation/69));
+    }
 
     public void getLocByKnn(RpEntity rpEntity){
 
         //appoint the number of minimum AP point
-        List<RpEntity> rpList = getRssiEntityFromTxt(fileName);
+        List<RpEntity> rpList = getRssiEntityFromTxt(data1,data2);
 
         List<RpEntity> rpListOfH = rpList.subList(0,46);
         List<RpEntity> rpListOfRv = rpList.subList(47,57);
@@ -164,7 +182,7 @@ public class KNNService {
 
     public List<RpEntity> getRssiEntityFromTxt(String filename){
 
-        HashMap<String, String> changeName = new HashMap<>();
+
         changeName.put("Four-Faith-2", "ap1");
         changeName.put("Four-Faith-3", "ap2");
         changeName.put("TP-LINK_E7D2", "ap3");
@@ -200,6 +218,34 @@ public class KNNService {
             ex.printStackTrace();
         }
         return rpEntities;
+    }
+
+    public List<RpEntity> getRssiEntityFromTxt(String data1,String data2){
+        List<RpEntity> rpList1 = getRssiEntityFromTxt(data1);
+        List<RpEntity> rpList2 = getRssiEntityFromTxt(data2);
+        List<RpEntity> rpList = new ArrayList<>();
+
+        for (int i = 0; i < 69; i++) {
+            RpEntity rpEntity = new RpEntity();
+            HashMap<String, Float> apEntities = new HashMap<>();
+            for(String apname:changeName.values()){
+                int count = 0;
+                float result = 0;
+                if (rpList1.get(i).getApEntities().containsKey(apname)){
+                    count++;
+                    result += rpList1.get(i).getApEntities().get(apname);
+                }
+                if (rpList2.get(i).getApEntities().containsKey(apname)){
+                    count++;
+                    result += rpList2.get(i).getApEntities().get(apname);
+                }
+                if(count > 0) apEntities.put(apname,result/count);
+            }
+            rpEntity.setApEntities(apEntities);
+            rpEntity.setPoint(rpList1.get(i).getPoint());
+            rpList.add(rpEntity);
+        }
+        return rpList;
     }
 
 }

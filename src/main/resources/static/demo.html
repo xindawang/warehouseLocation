@@ -29,13 +29,13 @@
 
         //查看位置
         $("#viewLoc").click(function(){
-            $("#background img").remove();
+            $("#locationIcon").remove();
             $.ajax({
                 url: "/getLoc",
                 type: "get",
                 success: function (result) {
                     var loc = result.split(",");
-                    $("#background").append('<img src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
+                    $("#background").append('<img id="locationIcon" src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
                 }
             });
         });
@@ -53,26 +53,40 @@
 //            drawLine(30,120,1000,120);
         });
 
+        $("#clearData").click(function(){
+            initCanvas();
+            $.ajax({
+                url: "/clearAllRecord",
+                type: "get",
+                success: function (result) {
+                    if (result = "success")
+                        alert("success");
+                }
+            });
+//            drawLine(30,120,1000,120);
+        });
+
         function handleResultArray(result){
             var startLeft,startTop,endLeft,endTop;
             var isFirst = true;
+            var ListLen = Object.getOwnPropertyNames(result).length;
 
-            if (Object.getOwnPropertyNames(result).length>1){
-                for (var r in result){
-                    var point = result[r].split(",");
-                    if (isFirst){
-                        startLeft = point[0];
-                        startTop = point[1];
-                        isFirst = false;
-                    }else{
-                        endLeft = point[0];
-                        endTop = point[1];
-//                        drawLine(parseInt(startLeft),parseInt(startTop),parseInt(endLeft),parseInt(endTop));
-                        drawLine(30,120,1000,120);
-                        startLeft = endLeft;
-                        startTop = endTop;
-                    }
-                }
+            if (ListLen >1){
+                var i =0;
+
+
+                var loop =setInterval(function(){
+
+                    var startPoint = result[i].split(",");
+                    var endPoint = result[i+1].split(",");
+                    dynamicDrawLine(parseInt(startPoint[0]),parseInt(startPoint[1]),
+                        parseInt(endPoint[0]),parseInt(endPoint[1]));
+//                    drawLine(parseInt(startPoint[0]),parseInt(startPoint[1]),
+//                        parseInt(endPoint[0]),parseInt(endPoint[1]));
+                    i++;
+                },3000);
+
+
             }else{
                 alert("数据点不足!")
             }
@@ -101,17 +115,15 @@
         }
 
         function step(timestamp) {
-            if (!start) start = timestamp;
-            var progress = timestamp - start;
-            if (curLeft<endLeft) curLeft=curLeft+moveLeft;
-            if (curTop<endTop) curTop =curTop +moveTop;
+            curLeft=curLeft+moveLeft;
+            curTop =curTop +moveTop;
 
             context.lineTo(ml(curLeft),mt(curTop));
             context.lineWidth = 4;//线条的宽度
             context.strokeStyle = "#2238f0"
             context.stroke();
 
-            if (curLeft < endLeft || curTop < endTop) {
+            if ((startLeft - endLeft) * (curLeft - endLeft)>0){
                 window.requestAnimationFrame(step);
             }else{
                 drawPoint(endLeft,endTop);
@@ -120,11 +132,13 @@
 
         function drawPoint(pointLeft,pointTop) {
             context.fillStyle="#FF0000";
+            context.beginPath();
             context.arc(ml(pointLeft),mt(pointTop),5,0,Math.PI*2,true);
+            context.closePath();
             context.fill();
         }
 
-        function drawLine(sLeft,sTop,eLeft,eTop) {
+        function dynamicDrawLine(sLeft,sTop,eLeft,eTop) {
             startLeft = sLeft;
             startTop = sTop;
             endLeft = eLeft;
@@ -132,14 +146,20 @@
             curLeft = startLeft;
             curTop = startTop;
 
-            if (endLeft>startLeft) moveLeft = 10;
-            else if (endLeft<startLeft)moveLeft = -10;
-            if (endTop>startTop) moveTop = 10;
-            else if (endTop<startTop)moveTop = -10;
+            moveLeft = (endLeft-startLeft)/100;
+            moveTop = (endTop-startTop)/100;
 
             drawPoint(startLeft,startTop);
             context.moveTo(ml(startLeft),mt(startTop));
             window.requestAnimationFrame(step);
+        }
+
+        function drawLine(sLeft,sTop,eLeft,eTop) {
+            context.moveTo(ml(sLeft),mt(sTop));
+            context.lineTo(ml(eLeft),mt(eTop));
+            context.lineWidth = 4;//线条的宽度
+            context.strokeStyle = "#4cf03c"
+            context.stroke();
         }
 
     })

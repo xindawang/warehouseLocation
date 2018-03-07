@@ -1,8 +1,10 @@
 package com.example.fnweb.Service;
 
+import com.example.fnweb.Entity.BayesArgsEntity;
 import com.example.fnweb.Entity.DeviceEntity;
 import com.example.fnweb.Entity.PointLocEntity;
 import com.example.fnweb.Entity.RpEntity;
+import com.example.fnweb.Mapper.BayesMapper;
 import com.example.fnweb.Mapper.DeviceMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Mapper.RssiMapper;
@@ -29,7 +31,12 @@ public class KNNService {
     @Autowired
     private PointLocMapper pointLocMapper;
 
+    @Autowired
+    private BayesMapper bayesMapper;
+
     private int k = 3;
+
+    private int apAmount=5;
 
     boolean useDatabase = false;
     HashMap<String, String> changeName = new HashMap<>();
@@ -56,11 +63,15 @@ public class KNNService {
     public void getLocByKnn(RpEntity rpEntity){
 
         //appoint the number of minimum AP point
-        List<RpEntity> rpList = getRssiEntityFromTxt(data1,data2);
 
-        List<RpEntity> rpListOfH = rpList.subList(0,46);
-        List<RpEntity> rpListOfRv = rpList.subList(47,57);
-        List<RpEntity> rpListOfLv = rpList.subList(58,68);
+        //get from txt
+//        List<RpEntity> rpList = getRssiEntityFromTxt(data1,data2);
+
+        //get from database
+        List<RpEntity> rpList = getRssiEntityFromDatabase();
+        List<RpEntity> rpListOfH = rpList.subList(0,50);
+        List<RpEntity> rpListOfRv = rpList.subList(50,62);
+        List<RpEntity> rpListOfLv = rpList.subList(62,74);
 
         RpEntity[] rpEntitiesH = getMinK(rpEntity,rpListOfH);
         RpEntity[] rpEntitiesRv = getMinK(rpEntity,rpListOfRv);
@@ -105,6 +116,25 @@ public class KNNService {
         //convert the format of location info according to how it store into database
         rpEntity.setLeftpx((int)Math.round(x));
         rpEntity.setToppx((int)Math.round(y));
+    }
+
+    private List<RpEntity> getRssiEntityFromDatabase() {
+        List<RpEntity> rpEntities = new ArrayList<>();
+        List<String> allPointNames = bayesMapper.getAllPointName();
+        for (String pointName : allPointNames) {
+            RpEntity rpEntity = new RpEntity();
+            HashMap<String, Double> apEntities = new HashMap<>();
+            for (int i = 1; i <= apAmount; i++) {
+                String apName =  "ap" + i;
+                String avgName = "ap" + i + "_average";
+                BayesArgsEntity eachAp = bayesMapper.getEachApAvg(avgName, pointName);
+                apEntities.put(apName,eachAp.getApNameAvg());
+            }
+            rpEntity.setApEntities(apEntities);
+            rpEntity.setPoint(pointName);
+            rpEntities.add(rpEntity);
+        }
+        return rpEntities;
     }
 
     private double getDif(RpEntity[] rpEntities, RpEntity rpEntity) {
@@ -197,11 +227,11 @@ public class KNNService {
             int count = 1;
             while (str != null) {
                 RpEntity rpEntity = new RpEntity();
-                HashMap<String, Float> apEntities = new HashMap<>();
+                HashMap<String, Double> apEntities = new HashMap<>();
                 String[] eachRpSet = str.split(";");
                 for (int i=0;i< eachRpSet.length;i++) {
                     String[] eachAp = eachRpSet[i].split(" ");
-                    apEntities.put(changeName.get(eachAp[0]),Float.valueOf(eachAp[1]));
+                    apEntities.put(changeName.get(eachAp[0]),Double.valueOf(eachAp[1]));
                 }
                 if (count < 48) rpEntity.setPoint("h"+count);
                 else if (count < 59) rpEntity.setPoint("rv"+(count-47));
@@ -227,10 +257,10 @@ public class KNNService {
 
         for (int i = 0; i < 69; i++) {
             RpEntity rpEntity = new RpEntity();
-            HashMap<String, Float> apEntities = new HashMap<>();
+            HashMap<String, Double> apEntities = new HashMap<>();
             for(String apname:changeName.values()){
                 int count = 0;
-                float result = 0;
+                double result = 0;
                 if (rpList1.get(i).getApEntities().containsKey(apname)){
                     count++;
                     result += rpList1.get(i).getApEntities().get(apname);

@@ -79,33 +79,41 @@ public class DataController {
     @ResponseBody
     @RequestMapping(value = "/getLoc",method = RequestMethod.GET)
     public String getLoc(){
-
+//        resultEntity = "200,120";
         return resultEntity;
     }
 
     @ResponseBody
     @RequestMapping(value = "/getAllRecord",method = RequestMethod.GET)
     public HashMap<Integer,String> getAllRecord(){
-        allRecord.clear();
-        count =0 ;
-        allRecord.put(count++,"40,120");
-        allRecord.put(count++,"200,120");
-        allRecord.put(count++,"600,120");
-        allRecord.put(count++,"1000,120");
+//        allRecord.clear();
+//        count =0 ;
+//        allRecord.put(count++,"40,120");
+//        allRecord.put(count++,"400,300");
+//        allRecord.put(count++,"1000,120");
+//        allRecord.put(count++,"800,120");
+//        allRecord.put(count++,"200,120");
 
         return allRecord;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/clearAllRecord",method = RequestMethod.GET)
+    public String clearAllRecord(){
+        allRecord.clear();
+        return "success";
     }
 
     @ResponseBody
     @RequestMapping(value = "/loc",method = RequestMethod.POST)
     public String getUserLoc(ApEntity apEntity) {
         RpEntity rpEntity = new RpEntity();
-        HashMap<String,Float> apentities = new HashMap<>();
-        if (apEntity.getAp1()!=null) apentities.put("ap1",Float.valueOf(apEntity.getAp1()));
-        if (apEntity.getAp2()!=null) apentities.put("ap2",Float.valueOf(apEntity.getAp2()));
-        if (apEntity.getAp3()!=null) apentities.put("ap3",Float.valueOf(apEntity.getAp3()));
-        if (apEntity.getAp4()!=null) apentities.put("ap4",Float.valueOf(apEntity.getAp4()));
-        if (apEntity.getAp5()!=null) apentities.put("ap5",Float.valueOf(apEntity.getAp5()));
+        HashMap<String,Double> apentities = new HashMap<>();
+        if (apEntity.getAp1()!=null) apentities.put("ap1",Double.valueOf(apEntity.getAp1()));
+        if (apEntity.getAp2()!=null) apentities.put("ap2",Double.valueOf(apEntity.getAp2()));
+        if (apEntity.getAp3()!=null) apentities.put("ap3",Double.valueOf(apEntity.getAp3()));
+        if (apEntity.getAp4()!=null) apentities.put("ap4",Double.valueOf(apEntity.getAp4()));
+        if (apEntity.getAp5()!=null) apentities.put("ap5",Double.valueOf(apEntity.getAp5()));
         rpEntity.setApEntities(apentities);
         if (apEntity.getAlgorithm()!=null) {
             if (apEntity.getAlgorithm().equals("knn")) {

@@ -50,14 +50,15 @@ public class FnwebApplicationTests {
 	@Test
 	public void getTestLoc(){
 		RpEntity rpEntity = new RpEntity();
-		HashMap<String,Float> apentities = new HashMap<>();
-		apentities.put("ap1",Float.valueOf(-53));
-		apentities.put("ap2",Float.valueOf(-42));
-		apentities.put("ap3",Float.valueOf(-51));
-		apentities.put("ap4",Float.valueOf(-46));
-		apentities.put("ap5",Float.valueOf(-47));
+		HashMap<String,Double> apentities = new HashMap<>();
+		apentities.put("ap1",Double.valueOf(-50));
+		apentities.put("ap2",Double.valueOf(-44));
+		apentities.put("ap3",Double.valueOf(-44));
+		apentities.put("ap4",Double.valueOf(-43));
+		apentities.put("ap5",Double.valueOf(-47));
 		rpEntity.setApEntities(apentities);
-		knnService.getLocByKnn(rpEntity);
+//		knnService.getLocByKnn(rpEntity);
+		naiveBayesService.getLocByBayes(rpEntity);
 		System.out.println(rpEntity.getLocString());
 	}
 

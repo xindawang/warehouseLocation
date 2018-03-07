@@ -24,7 +24,7 @@ public interface PointLocMapper {
     @Select("select * from point_loc where point_name=#{point_name}")
     PointLocEntity getPointLocInfoByEntity(PointLocEntity pointLocEntity);
 
-    @Select("select distinct point_name from point_loc")
+    @Select("select distinct point_name from point_warehouse")
     List<String> getAllPointName();
 
     @Insert("insert into point_loc (point_name,x,y) values (#{point_name},#{x},#{y})")

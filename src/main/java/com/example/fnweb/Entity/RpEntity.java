@@ -8,7 +8,7 @@ import java.util.HashSet;
  */
 public class RpEntity {
     private Integer id;
-    private HashMap<String, Float> apEntities;
+    private HashMap<String, Double> apEntities;
     private String point_name;
     private Double knnResult;
     private Integer leftpx;
@@ -55,11 +55,11 @@ public class RpEntity {
         this.knnResult = knnResult;
     }
 
-    public HashMap<String, Float> getApEntities() {
+    public HashMap<String, Double> getApEntities() {
         return apEntities;
     }
 
-    public void setApEntities(HashMap<String, Float> apEntities) {
+    public void setApEntities(HashMap<String, Double> apEntities) {
         this.apEntities = apEntities;
     }
 

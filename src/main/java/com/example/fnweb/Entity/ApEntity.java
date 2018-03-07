@@ -47,6 +47,10 @@ public class ApEntity {
         return ap5;
     }
 
+    public void setAp5(String ap5) {
+        this.ap5 = ap5;
+    }
+
     public String getAlgorithm() {
         return algorithm;
     }

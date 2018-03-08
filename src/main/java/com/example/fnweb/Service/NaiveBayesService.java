@@ -6,6 +6,7 @@ import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Mapper.BayesMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Mapper.RssiMapper;
+import com.example.fnweb.tools.RssiTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,31 +36,20 @@ public class NaiveBayesService {
 
     private int apAmount = 5;
 
-    private int k = 3;
-
-    HashMap<String, String> changeName;
+    private int k = 3;;
 
     //get all the rssi of each ap in each point and calculate the average and variance
     @Transactional
-    public boolean getArgsFromData(){
-
-        changeName = new HashMap<>();
-
-        changeName.put("Four-Faith-2", "ap1");
-        changeName.put("Four-Faith-3", "ap2");
-        changeName.put("TP-LINK_E7D2", "ap3");
-        changeName.put("TP-LINK_3625", "ap4");
-        changeName.put("TP-LINK_3051", "ap5");
+    public boolean getArgsFromData(String tableName,String filename){
 
         List<String> allPoints = pointLocMapper.getAllPointName();
-        String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
         int rpCurCount = 1;
         for (String str : allPoints) {
             for (int i = 1; i <= apAmount; i++) {
                 String apName = "ap"+i;
 //                List<Double> eachApData = rssiMapper.getEachApRssiByPointName(apName,str);
                 List<Double> eachApData = getApRssiOfRpFromTxt(filename,apName,rpCurCount,19);
-                if (!computeAndInsertGaussArgs(eachApData,str,apName)) return false;
+                if (!computeAndInsertGaussArgs(tableName,eachApData,str,apName)) return false;
                 System.out.println(eachApData);
             }
             rpCurCount++;
@@ -67,7 +57,7 @@ public class NaiveBayesService {
         return true;
     }
 
-    private boolean computeAndInsertGaussArgs(List<Double> eachApData,String pointName, String apName) {
+    private boolean computeAndInsertGaussArgs(String tableName, List<Double> eachApData, String pointName, String apName) {
         double sum = 0.0, variance = 0.0;
         for (Double eachResult : eachApData) sum += eachResult;
         double average = sum/eachApData.size();
@@ -80,30 +70,42 @@ public class NaiveBayesService {
 
         //insert a point if store the args for the first time
         //update the point info if the point has existed
-        if (bayesMapper.hasPoint(pointName)){
-            if(!bayesMapper.updateBayesArgs(avgName,varName,pointName,average,variance)) return false;
+        if (bayesMapper.hasPoint(tableName,pointName)){
+            if(!bayesMapper.updateBayesArgs(tableName,avgName,varName,pointName,average,variance)) return false;
         }else{
-            if (!bayesMapper.insertBayesArgs(avgName,varName,pointName,average,variance)) return false;
+            if (!bayesMapper.insertBayesArgs(tableName,avgName,varName,pointName,average,variance)) return false;
         }
         return true;
     }
 
-    public void getLocByBayes(RpEntity rpEntity){
+    //use absolute value in bayes method
+    public void getLocByBayesAbsolute(RpEntity rpEntity){
+        String tableName = "tablet_args";
+        getLocByBayes(rpEntity, tableName);
+    }
+
+    //use relative value in bayes method
+    public void getLocByBayesRelative(RpEntity rpEntity){
+        String tableName = "tablet_relative_args";
+        RssiTool.changeAbsEntityToRel(rpEntity);
+        getLocByBayes(rpEntity, tableName);
+    }
+
+    public void getLocByBayes(RpEntity rpEntity, String tableName){
 
         //initialize the input data
         HashMap<String, Double> rpInfoSrc = rpEntity.getApEntities();
-        List<String> allPointNames = bayesMapper.getAllPointName();
 
         //get ratio and location info of each point and add up for the result
-        PointLocEntity[] maxKEntitiesH = getKPointsWithHighestProb(rpInfoSrc,allPointNames,1,50);
-        PointLocEntity[] maxKEntitiesRv = getKPointsWithHighestProb(rpInfoSrc,allPointNames,51,62);
-        PointLocEntity[] maxKEntitiesLv = getKPointsWithHighestProb(rpInfoSrc,allPointNames,63,74);
+        PointLocEntity[] maxKEntitiesH = getKPointsWithHighestProb(tableName,rpInfoSrc,1,50);
+        PointLocEntity[] maxKEntitiesRv = getKPointsWithHighestProb(tableName,rpInfoSrc,51,62);
+        PointLocEntity[] maxKEntitiesLv = getKPointsWithHighestProb(tableName,rpInfoSrc,63,74);
 
         List<PointLocEntity[]> pointLocEntities = new ArrayList<>();
         pointLocEntities.add(maxKEntitiesH);
         pointLocEntities.add(maxKEntitiesRv);
         pointLocEntities.add(maxKEntitiesLv);
-        PointLocEntity[] maxKEntities = getMaxGroup(pointLocEntities,rpEntity);
+        PointLocEntity[] maxKEntities = getMaxGroup(pointLocEntities);
 
         double sum = 0,x=0,y=0;
         for (int i = 0; i < maxKEntities.length; i++){
@@ -121,25 +123,24 @@ public class NaiveBayesService {
         rpEntity.setToppx((int)y);
     }
 
-    private PointLocEntity[] getMaxGroup(List<PointLocEntity[]> pointLocEntities,RpEntity rpEntity) {
-        PointLocEntity[] maxKEntities = pointLocEntities.get(0);
-        List<String> firstPointNames = new ArrayList<>();
-        for (PointLocEntity f:maxKEntities){
-            firstPointNames.add(f.getPoint_name());
-        }
-        for (PointLocEntity[] locEntities:pointLocEntities) {
-            List<String> pointNames = new ArrayList<>();
-            for (PointLocEntity p:locEntities){
-                pointNames.add(p.getPoint_name());
+    private PointLocEntity[] getMaxGroup(List<PointLocEntity[]> pointLocEntitiesList) {
+        PointLocEntity[] maxKEntities = pointLocEntitiesList.get(0);
+        double lastProb = 0;
+        for (PointLocEntity pointLocEntity : maxKEntities) lastProb += pointLocEntity.getBayesResult();
+
+        for (PointLocEntity[] pointLocEntities:pointLocEntitiesList) {
+            double thisProb = 0;
+            for (PointLocEntity pointLocEntity : pointLocEntities) thisProb += pointLocEntity.getBayesResult();
+            if (thisProb> lastProb){
+                maxKEntities = pointLocEntities;
+                lastProb = thisProb;
             }
-            if (getKPointsWithHighestProb(rpEntity.getApEntities(),pointNames,1,3)> getKPointsWithHighestProb(rpEntity.getApEntities(),firstPointNames,1,3))
-                maxKEntities = locEntities;
         }
         return maxKEntities;
     }
 
-    private PointLocEntity[] getKPointsWithHighestProb(HashMap<String, Double> rpInfoSrc,
-                                                       List<String> allPointNames,int startCount, int endCount){
+    private PointLocEntity[] getKPointsWithHighestProb(String tableName, HashMap<String, Double> rpInfoSrc,
+                                                       int startCount, int endCount){
 
         //use the way of priority queue, which could be compared to the knn
         Comparator<PointLocEntity> cmp = new Comparator<PointLocEntity>() {
@@ -151,6 +152,7 @@ public class NaiveBayesService {
 
         Queue<PointLocEntity> maxKPoints = new PriorityQueue<>(cmp);
         PointLocEntity[] pointLocEntities = new PointLocEntity[k];
+        List<String> allPointNames = bayesMapper.getAllPointName(tableName);
 
         int count =1;
         //calculate the probability of each candidate point, pick the max k
@@ -164,7 +166,7 @@ public class NaiveBayesService {
                     String apName = "ap" + i;
                     String avgName = "ap" + i + "_average";
                     String varName = "ap" + i + "_variance";
-                    BayesArgsEntity eachAp = bayesMapper.getEachApArgs(avgName, varName, pointName);
+                    BayesArgsEntity eachAp = bayesMapper.getEachApArgs(tableName,avgName, varName, pointName);
                     if (eachAp.getApNameVar() == 0)
                         eachAp.setApNameVar(0.000001);
                     double thisApProb = 1 / Math.sqrt(2 * Math.PI * eachAp.getApNameVar()) * Math.pow(E, -Math.pow(rpInfoSrc.get(apName) - eachAp.getApNameAvg(), 2) / (2 * eachAp.getApNameVar()));
@@ -197,7 +199,7 @@ public class NaiveBayesService {
                     String[] eachRpSet = str.split(";");
                     for (int i = 0; i < eachRpSet.length; i++) {
                         String[] eachAp = eachRpSet[i].split(" ");
-                        if (changeName.get(eachAp[0]).equals(apName))
+                        if (RssiTool.getNewName(eachAp[0]).equals(apName))
                             eachApData.add(Double.valueOf(eachAp[1]));
                     }
                 }
@@ -211,6 +213,22 @@ public class NaiveBayesService {
             ex.printStackTrace();
         }
         return eachApData;
+    }
+
+    //计算误差
+    public void getPrecision(String tableName,String filename,int pointCount,int repeatTimes){
+        List<RpEntity> rpList = RssiTool.getRssiEntityFromTxt(filename,repeatTimes);
+        float horizontalDeviation = 0;
+        float verticalDeviation = 0;
+        PointLocEntity pointLocEntity;
+        for (int i = 0; i < pointCount*repeatTimes; i++) {
+            getLocByBayes(rpList.get(i),tableName);
+            pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i/repeatTimes).getPoint());
+            horizontalDeviation += rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx();
+            verticalDeviation += rpList.get(i).getToppx()-pointLocEntity.getToppx();
+        }
+        System.out.println(Math.abs(horizontalDeviation/pointCount/repeatTimes));
+        System.out.println(Math.abs(verticalDeviation/pointCount/repeatTimes));
     }
 
 }

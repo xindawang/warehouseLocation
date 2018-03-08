@@ -8,6 +8,7 @@ import com.example.fnweb.Mapper.BayesMapper;
 import com.example.fnweb.Mapper.DeviceMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Mapper.RssiMapper;
+import com.example.fnweb.tools.RssiTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,28 +40,24 @@ public class KNNService {
     private int apAmount=5;
 
     boolean useDatabase = false;
-    HashMap<String, String> changeName = new HashMap<>();
 
     private String data1 = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt";
     private String data2 = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\2.txt";
 
-    //计算误差
-    public void getPrecision(){
-        List<RpEntity> rpList = getRssiEntityFromTxt(data1);
-        float horizontalDeviation = 0;
-        float verticalDeviation = 0;
-        PointLocEntity pointLocEntity;
-        for (int i = 0; i < 69; i++) {
-            getLocByKnn(rpList.get(i));
-            pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i).getPoint());
-            horizontalDeviation += rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx();
-            verticalDeviation += rpList.get(i).getToppx()-pointLocEntity.getToppx();
-        }
-        System.out.println(Math.abs(horizontalDeviation/69));
-        System.out.println(Math.abs(verticalDeviation/69));
+    //use relative value in knn method
+    public void getLocByKnnAbsolute(RpEntity rpEntity){
+        String tableName = "tablet_args";
+        getLocByKnn(rpEntity,tableName);
     }
 
-    public void getLocByKnn(RpEntity rpEntity){
+    //use relative value in knn method
+    public void getLocByKnnRelative(RpEntity rpEntity){
+        String tableName = "tablet_relative_args";
+        RssiTool.changeAbsEntityToRel(rpEntity);
+        getLocByKnn(rpEntity,tableName);
+    }
+
+    public void getLocByKnn(RpEntity rpEntity,String tableName){
 
         //appoint the number of minimum AP point
 
@@ -68,7 +65,7 @@ public class KNNService {
 //        List<RpEntity> rpList = getRssiEntityFromTxt(data1,data2);
 
         //get from database
-        List<RpEntity> rpList = getRssiEntityFromDatabase();
+        List<RpEntity> rpList = getRssiEntityFromDatabase(tableName);
         List<RpEntity> rpListOfH = rpList.subList(0,50);
         List<RpEntity> rpListOfRv = rpList.subList(50,62);
         List<RpEntity> rpListOfLv = rpList.subList(62,74);
@@ -118,16 +115,16 @@ public class KNNService {
         rpEntity.setToppx((int)Math.round(y));
     }
 
-    private List<RpEntity> getRssiEntityFromDatabase() {
+    private List<RpEntity> getRssiEntityFromDatabase(String tableName) {
         List<RpEntity> rpEntities = new ArrayList<>();
-        List<String> allPointNames = bayesMapper.getAllPointName();
+        List<String> allPointNames = bayesMapper.getAllPointName(tableName);
         for (String pointName : allPointNames) {
             RpEntity rpEntity = new RpEntity();
             HashMap<String, Double> apEntities = new HashMap<>();
             for (int i = 1; i <= apAmount; i++) {
                 String apName =  "ap" + i;
                 String avgName = "ap" + i + "_average";
-                BayesArgsEntity eachAp = bayesMapper.getEachApAvg(avgName, pointName);
+                BayesArgsEntity eachAp = bayesMapper.getEachApAvg(tableName,avgName, pointName);
                 apEntities.put(apName,eachAp.getApNameAvg());
             }
             rpEntity.setApEntities(apEntities);
@@ -210,72 +207,19 @@ public class KNNService {
         return rpEntities;
     }
 
-    public List<RpEntity> getRssiEntityFromTxt(String filename){
-
-
-        changeName.put("Four-Faith-2", "ap1");
-        changeName.put("Four-Faith-3", "ap2");
-        changeName.put("TP-LINK_E7D2", "ap3");
-        changeName.put("TP-LINK_3625", "ap4");
-        changeName.put("TP-LINK_3051", "ap5");
-
-        List<RpEntity> rpEntities = new ArrayList<>();
-        try {
-            FileReader reader = new FileReader(filename);
-            BufferedReader br = new BufferedReader(reader);
-            String str = br.readLine();
-            int count = 1;
-            while (str != null) {
-                RpEntity rpEntity = new RpEntity();
-                HashMap<String, Double> apEntities = new HashMap<>();
-                String[] eachRpSet = str.split(";");
-                for (int i=0;i< eachRpSet.length;i++) {
-                    String[] eachAp = eachRpSet[i].split(" ");
-                    apEntities.put(changeName.get(eachAp[0]),Double.valueOf(eachAp[1]));
-                }
-                if (count < 48) rpEntity.setPoint("h"+count);
-                else if (count < 59) rpEntity.setPoint("rv"+(count-47));
-                else rpEntity.setPoint("lv"+(count-58));
-                rpEntity.setApEntities(apEntities);
-                rpEntities.add(rpEntity);
-                str = br.readLine();
-                count++;
-            }
-            br.close();
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+    //计算误差
+    public void getPrecision(String tableName,String filename,int pointCount,int repeatTimes){
+        List<RpEntity> rpList = RssiTool.getRssiEntityFromTxt(filename,repeatTimes);
+        float horizontalDeviation = 0;
+        float verticalDeviation = 0;
+        PointLocEntity pointLocEntity;
+        for (int i = 0; i < pointCount*repeatTimes; i++) {
+            getLocByKnn(rpList.get(i),tableName);
+            pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i/repeatTimes).getPoint());
+            horizontalDeviation += rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx();
+            verticalDeviation += rpList.get(i).getToppx()-pointLocEntity.getToppx();
         }
-        return rpEntities;
+        System.out.println(Math.abs(horizontalDeviation/pointCount/repeatTimes));
+        System.out.println(Math.abs(verticalDeviation/pointCount/repeatTimes));
     }
-
-    public List<RpEntity> getRssiEntityFromTxt(String data1,String data2){
-        List<RpEntity> rpList1 = getRssiEntityFromTxt(data1);
-        List<RpEntity> rpList2 = getRssiEntityFromTxt(data2);
-        List<RpEntity> rpList = new ArrayList<>();
-
-        for (int i = 0; i < 69; i++) {
-            RpEntity rpEntity = new RpEntity();
-            HashMap<String, Double> apEntities = new HashMap<>();
-            for(String apname:changeName.values()){
-                int count = 0;
-                double result = 0;
-                if (rpList1.get(i).getApEntities().containsKey(apname)){
-                    count++;
-                    result += rpList1.get(i).getApEntities().get(apname);
-                }
-                if (rpList2.get(i).getApEntities().containsKey(apname)){
-                    count++;
-                    result += rpList2.get(i).getApEntities().get(apname);
-                }
-                if(count > 0) apEntities.put(apname,result/count);
-            }
-            rpEntity.setApEntities(apEntities);
-            rpEntity.setPoint(rpList1.get(i).getPoint());
-            rpList.add(rpEntity);
-        }
-        return rpList;
-    }
-
 }

@@ -4,6 +4,7 @@ import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Service.KNNService;
 import com.example.fnweb.Service.NaiveBayesService;
 import com.example.fnweb.Service.PointStoreService;
+import com.example.fnweb.tools.RssiTool;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +29,10 @@ public class FnwebApplicationTests {
 
 	@Test
 	public void getArgsFromData(){
-		System.out.println(naiveBayesService.getArgsFromData());
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletRelative.txt";
+		System.out.println(naiveBayesService.getArgsFromData("tablet_relative_args",filename));
 	}
 
-	@Test
-	public void getRssiInfo(){
-		List<RpEntity> rpList = knnService.getRssiEntityFromTxt("E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt");
-		System.out.println(rpList);
-	}
 
 	@Test
 	public void insertPointLoc2(){
@@ -48,6 +45,27 @@ public class FnwebApplicationTests {
 	}
 
 	@Test
+	public void getTestLocByString(){
+
+		HashMap<String,Double> apentities = new HashMap<>();
+		RpEntity rpEntity = new RpEntity();
+
+		String rssiString = "TP-LINK_E7D2 -48;TP-LINK_3051 -50;Four-Faith-2 -52;Four-Faith-3 -44;TP-LINK_3625 -46;";
+		String[] eachRpSet = rssiString.split(";");
+		for (int i=0;i< eachRpSet.length;i++) {
+			String[] eachAp = eachRpSet[i].split(" ");
+			apentities.put(RssiTool.getNewName(eachAp[0]),Double.valueOf(eachAp[1]));
+		}
+
+		rpEntity.setApEntities(apentities);
+		knnService.getLocByKnnAbsolute(rpEntity);
+//		knnService.getLocByKnnRelative(rpEntity);
+//		naiveBayesService.getLocByBayesAbsolute(rpEntity);
+//		naiveBayesService.getLocByBayesRelative(rpEntity);
+		System.out.println(rpEntity.getLocString());
+	}
+
+	@Test
 	public void getTestLoc(){
 		RpEntity rpEntity = new RpEntity();
 		HashMap<String,Double> apentities = new HashMap<>();
@@ -57,15 +75,26 @@ public class FnwebApplicationTests {
 		apentities.put("ap4",Double.valueOf(-43));
 		apentities.put("ap5",Double.valueOf(-47));
 		rpEntity.setApEntities(apentities);
-//		knnService.getLocByKnn(rpEntity);
-		naiveBayesService.getLocByBayes(rpEntity);
+//		knnService.getLocByKnnAbsolute(rpEntity);
+//		knnService.getLocByKnnRelative(rpEntity);
+//		naiveBayesService.getLocByBayesAbsolute(rpEntity);
+		naiveBayesService.getLocByBayesRelative(rpEntity);
 		System.out.println(rpEntity.getLocString());
 	}
 
 
 	@Test
 	public void getPrecision(){
-		knnService.getPrecision();
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
+		knnService.getPrecision("tablet_relative_args",filename,74,19);
+//		naiveBayesService.getPrecision("tablet_relative_args",filename,74,19);
 	}
+
+	@Test
+	public void changeToRelativeValue(){
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
+		pointStoreService.changeToRelativeValue(filename);
+	}
+
 
 }

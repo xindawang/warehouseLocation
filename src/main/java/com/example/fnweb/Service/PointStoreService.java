@@ -1,6 +1,7 @@
 package com.example.fnweb.Service;
 
 import com.example.fnweb.Entity.PointLocEntity;
+import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Mapper.DeviceMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 /**
  * Created by ACER on 2017/11/22.
@@ -25,6 +27,37 @@ public class PointStoreService {
     private PointLocMapper pointLocMapper;
 
     private String path = "E:\\IndoorLocation\\FengNiao\\FMWeb\\src\\main\\resources\\static\\data\\point_loc2.txt";
+
+    public boolean changeToRelativeValue(String filename){
+        try {
+            FileReader reader = new FileReader(filename);
+            BufferedReader br = new BufferedReader(reader);
+            String str = br.readLine();
+            while (str != null) {
+                String[] eachRpSet = str.split(";");
+                double minAbsValue = -200;
+                for (int i=0;i< eachRpSet.length;i++) {
+                    String[] eachAp = eachRpSet[i].split(" ");
+
+                    //rssi 值为负数
+                    if (Double.valueOf(eachAp[1])>minAbsValue) minAbsValue = Double.valueOf(eachAp[1]);
+                }
+                for (int i=0;i< eachRpSet.length;i++) {
+                    String[] eachAp = eachRpSet[i].split(" ");
+                    String relativeValue = String.format("%.7f", Double.valueOf(eachAp[1])/minAbsValue);
+                    System.out.print(eachAp[0]+" "+relativeValue+";");
+                }
+                System.out.println();
+                str = br.readLine();
+            }
+            br.close();
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return true;
+    }
 
     public boolean insertPointLoc(){
         try {

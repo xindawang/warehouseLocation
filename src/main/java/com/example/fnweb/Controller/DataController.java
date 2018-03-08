@@ -106,7 +106,7 @@ public class DataController {
 
     @ResponseBody
     @RequestMapping(value = "/loc",method = RequestMethod.POST)
-    public String getUserLoc(ApEntity apEntity) {
+    public String getUserLoc(ApEntity apEntity,String tableName) {
         RpEntity rpEntity = new RpEntity();
         HashMap<String,Double> apentities = new HashMap<>();
         if (apEntity.getAp1()!=null) apentities.put("ap1",Double.valueOf(apEntity.getAp1()));
@@ -117,9 +117,9 @@ public class DataController {
         rpEntity.setApEntities(apentities);
         if (apEntity.getAlgorithm()!=null) {
             if (apEntity.getAlgorithm().equals("knn")) {
-                knnService.getLocByKnn(rpEntity);
+                knnService.getLocByKnn(rpEntity,tableName);
             }else if (apEntity.getAlgorithm()=="bayes") {
-                naiveBayesService.getLocByBayes(rpEntity);
+                naiveBayesService.getLocByBayes(rpEntity,tableName);
             }
         }else{
             return null;

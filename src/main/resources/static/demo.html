@@ -16,14 +16,39 @@
 
     </div>
 
+    <div id="show">
+
+    </div>
 
 </body>
 <script src="lib/jquery-2.1.4.min.js"></script>
 <script src="lib/bootstrap.min.js"></script>
+<script type="text/javascript" src="lib/sockjs-0.3.4.min.js"></script>
+<script type="text/javascript" src="lib/stomp.min.js"></script>
 <link type="text/css" href="lib/bootstrap.min.css" rel="stylesheet">
 <script src="lib/fengmap.min.js"></script>
 <script>
     $(function () {
+
+        var stompClient;
+
+        websocketInit()//建立websocket连接
+
+        function websocketInit() {
+            var socket = new SockJS('/endpointWifi');
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function () {
+                //console.log('开始连接')
+                alert("开始连接")
+                stompClient.subscribe('/topic/wifiMessage', function (result) {
+                    $("#locationIcon").remove();
+                    var loc = result.body.split(",");
+                    $("#background").append('<img id="locationIcon" src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
+
+                });
+            })
+        }
 
         initCanvas();
 

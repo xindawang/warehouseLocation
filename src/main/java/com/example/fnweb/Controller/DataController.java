@@ -15,10 +15,13 @@ import com.github.pagehelper.PageHelper;;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.FileReader;
 import java.util.*;
@@ -26,7 +29,7 @@ import java.util.*;
 /**
  * Created by ACER on 2017/11/3.
  */
-@Controller
+@RestController
 public class DataController {
 
     String resultEntity = null;
@@ -47,6 +50,28 @@ public class DataController {
 
     @Autowired
     private NaiveBayesService naiveBayesService;
+
+    @Autowired
+    private SimpMessagingTemplate template;
+
+
+    @MessageMapping("/app_wifiMessage")
+    public void websocket(String message) {
+        JSONObject json = JSONObject.fromObject(message);
+        RpEntity rpEntity = new RpEntity();
+        HashMap<String,Double> apentities = new HashMap<>();
+        apentities.put("ap1",Double.valueOf(json.getString("ap1")));
+        apentities.put("ap2",Double.valueOf(json.getString("ap2")));
+        apentities.put("ap3",Double.valueOf(json.getString("ap3")));
+        apentities.put("ap4",Double.valueOf(json.getString("ap4")));
+        apentities.put("ap5",Double.valueOf(json.getString("ap5")));
+        rpEntity.setApEntities(apentities);
+        knnService.getLocByKnnAbsolute(rpEntity);
+
+        resultEntity = rpEntity.getLocString();
+        allRecord.put(count++,resultEntity);
+        template.convertAndSend("/topic/wifiMessage" , rpEntity.getLocString());
+    }
 
     @RequestMapping(value = "/data",method = RequestMethod.GET)
     public String getDataSet(){
@@ -106,8 +131,8 @@ public class DataController {
 
     @ResponseBody
     @RequestMapping(value = "/loc",method = RequestMethod.POST)
-    public String getUserLoc(ApEntity apEntity,String tableName) {
-        RpEntity rpEntity = new RpEntity();
+    public String getUserLoc(ApEntity apEntity) {
+            RpEntity rpEntity = new RpEntity();
         HashMap<String,Double> apentities = new HashMap<>();
         if (apEntity.getAp1()!=null) apentities.put("ap1",Double.valueOf(apEntity.getAp1()));
         if (apEntity.getAp2()!=null) apentities.put("ap2",Double.valueOf(apEntity.getAp2()));
@@ -117,9 +142,9 @@ public class DataController {
         rpEntity.setApEntities(apentities);
         if (apEntity.getAlgorithm()!=null) {
             if (apEntity.getAlgorithm().equals("knn")) {
-                knnService.getLocByKnn(rpEntity,tableName);
+                knnService.getLocByKnnAbsolute(rpEntity);
             }else if (apEntity.getAlgorithm()=="bayes") {
-                naiveBayesService.getLocByBayes(rpEntity,tableName);
+                naiveBayesService.getLocByBayesAbsolute(rpEntity);
             }
         }else{
             return null;

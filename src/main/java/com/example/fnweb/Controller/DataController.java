@@ -32,7 +32,8 @@ import java.util.*;
 @RestController
 public class DataController {
 
-    String resultEntity = null;
+    String resultEntityString = null;
+    String lastEntityString =null;
     LinkedHashMap<Integer,String> allRecord = new LinkedHashMap<>();
     int count = 0;
 
@@ -68,10 +69,15 @@ public class DataController {
         rpEntity.setApEntities(apentities);
         knnService.getLocByKnnAbsolute(rpEntity);
 
-        resultEntity = rpEntity.getLocString();
-        allRecord.put(count++,resultEntity);
+        if (lastEntityString == null){
+            lastEntityString =  rpEntity.getLocString();
+        }
+        resultEntityString = lastEntityString + "," + rpEntity.getLocString();
+        lastEntityString = rpEntity.getLocString();
+
+        allRecord.put(count++,resultEntityString);
         template.convertAndSend("/warehouse/loc" , rpEntity.getLocString());
-        template.convertAndSend("/warehouse/path" , rpEntity.getLocString());
+        template.convertAndSend("/warehouse/path" , resultEntityString);
     }
 
     @RequestMapping(value = "/data",method = RequestMethod.GET)
@@ -80,33 +86,33 @@ public class DataController {
     }
 
 
-    @ResponseBody
-    @RequestMapping(value = "/data/device",method = RequestMethod.GET)
-    public String getDevicesInfo(int pageSize, int page) {
-        PageHelper.startPage(page, pageSize);
-        List<DeviceEntity> list = deviceMapper.getAllDevicesInfo();
-        long total = ((Page<DeviceEntity>) list).getTotal();
-        Map<String, Object> map = new HashMap<>();
-        map.put("list", list);
-        map.put("total", total);
-        return JsonTool.objectToJson(map);
-    }
+//    @ResponseBody
+//    @RequestMapping(value = "/data/device",method = RequestMethod.GET)
+//    public String getDevicesInfo(int pageSize, int page) {
+//        PageHelper.startPage(page, pageSize);
+//        List<DeviceEntity> list = deviceMapper.getAllDevicesInfo();
+//        long total = ((Page<DeviceEntity>) list).getTotal();
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("list", list);
+//        map.put("total", total);
+//        return JsonTool.objectToJson(map);
+//    }
 
-    @ResponseBody
-    @RequestMapping(value = "/data/store",method = RequestMethod.GET)
-    public String storeData(){
-        //step 1: receive data and store in server, return data path
-
-        //step 2: import data from txt into database
-        dataStoreService.insertData();
-        return null;
-    }
+//    @ResponseBody
+//    @RequestMapping(value = "/data/store",method = RequestMethod.GET)
+//    public String storeData(){
+//        //step 1: receive data and store in server, return data path
+//
+//        //step 2: import data from txt into database
+//        dataStoreService.insertData();
+//        return null;
+//    }
 
     @ResponseBody
     @RequestMapping(value = "/getLoc",method = RequestMethod.GET)
     public String getLoc(){
 //        resultEntity = "200,120";
-        return resultEntity;
+        return resultEntityString;
     }
 
     @ResponseBody
@@ -150,8 +156,8 @@ public class DataController {
         }else{
             return null;
         }
-        resultEntity = rpEntity.getLocString();
-        allRecord.put(count++,resultEntity);
+        resultEntityString = rpEntity.getLocString();
+        allRecord.put(count++,resultEntityString);
         return rpEntity.getLocString();
     }
 }

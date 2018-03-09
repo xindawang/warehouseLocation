@@ -2,6 +2,7 @@ package com.example.fnweb.Mapper;
 
 import com.example.fnweb.Entity.PointLocEntity;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Repository;
 
@@ -10,7 +11,8 @@ import java.util.List;
 /**
  * Created by ACER on 2017/11/30.
  */
-@Repository
+//@Repository
+@Mapper
 public interface PointLocMapper {
     @Select("select * from point_loc where point_name=#{pointName}")
     PointLocEntity getPointLocInfoByName(String pointName);

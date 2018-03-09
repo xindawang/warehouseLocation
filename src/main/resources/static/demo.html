@@ -30,7 +30,7 @@
 <script>
     $(function () {
 
-
+        initCanvas();
 
         websocketInit()//建立websocket连接
 
@@ -56,12 +56,12 @@
                 //console.log('开始连接')
                 alert("开始连接")
                 stompClient2.subscribe('/warehouse/path', function (result) {
-                   alert("path")
+                    var loc = result.body.split(",");
+                    dynamicDrawLine(parseInt(loc[0]),parseInt(loc[1]),parseInt(loc[2]),parseInt(loc[3]));
                 });
             })
         }
 
-        initCanvas();
 
         //查看位置
         $("#viewLoc").click(function(){
@@ -159,7 +159,8 @@
             context.strokeStyle = "#2238f0"
             context.stroke();
 
-            if ((startLeft - endLeft) * (curLeft - endLeft)>0){
+            if ((startLeft - endLeft) * (curLeft - endLeft)>=0 &&
+                (startTop - endTop) * (curTop - endTop)>=0){
                 window.requestAnimationFrame(step);
             }else{
                 drawPoint(endLeft,endTop);

@@ -1,5 +1,6 @@
 package com.example.fnweb.websocket;
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
@@ -10,6 +11,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
  * Created by huanglin on 2017/8/9.
  */
 @Configuration
+@EnableAutoConfiguration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer {
     @Override

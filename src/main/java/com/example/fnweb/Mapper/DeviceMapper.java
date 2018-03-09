@@ -11,7 +11,8 @@ import java.util.List;
  * Created by ACER on 2017/11/3.
  */
 
-@Repository
+//@Repository
+@Mapper
 public interface DeviceMapper {
     @Select("select * from device_info")
     List<DeviceEntity> getAllDevicesInfo();

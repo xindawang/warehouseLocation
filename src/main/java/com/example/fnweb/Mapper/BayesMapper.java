@@ -1,10 +1,7 @@
 package com.example.fnweb.Mapper;
 
 import com.example.fnweb.Entity.BayesArgsEntity;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,7 +9,8 @@ import java.util.List;
 /**
  * Created by ACER on 2017/11/30.
  */
-@Repository
+//@Repository
+@Mapper
 public interface BayesMapper {
     @Select("select count(id) from ${tableName} where point_name = #{pointName}")
     Boolean hasPoint(@Param("tableName") String tableName,@Param("pointName")String pointName);

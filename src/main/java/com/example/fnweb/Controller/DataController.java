@@ -70,7 +70,8 @@ public class DataController {
 
         resultEntity = rpEntity.getLocString();
         allRecord.put(count++,resultEntity);
-        template.convertAndSend("/topic/wifiMessage" , rpEntity.getLocString());
+        template.convertAndSend("/warehouse/loc" , rpEntity.getLocString());
+        template.convertAndSend("/warehouse/path" , rpEntity.getLocString());
     }
 
     @RequestMapping(value = "/data",method = RequestMethod.GET)

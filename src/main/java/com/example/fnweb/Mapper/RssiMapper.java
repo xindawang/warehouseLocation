@@ -13,7 +13,6 @@ import java.util.List;
 /**
  * Created by ACER on 2017/11/30.
  */
-//@Repository
 @Mapper
 public interface RssiMapper {
     @Select("select * from rssi_info where device_id=#{device_id}")

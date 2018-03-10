@@ -11,7 +11,6 @@ import java.util.List;
 /**
  * Created by ACER on 2017/11/30.
  */
-//@Repository
 @Mapper
 public interface UserMapper {
     @Select("select * from user_location")

@@ -169,7 +169,11 @@ public class NaiveBayesService {
                     BayesArgsEntity eachAp = bayesMapper.getEachApArgs(tableName,avgName, varName, pointName);
                     if (eachAp.getApNameVar() == 0)
                         eachAp.setApNameVar(0.000001);
-                    double thisApProb = 1 / Math.sqrt(2 * Math.PI * eachAp.getApNameVar()) * Math.pow(E, -Math.pow(rpInfoSrc.get(apName) - eachAp.getApNameAvg(), 2) / (2 * eachAp.getApNameVar()));
+
+                    //handle the situation when apX is not found
+                    double thisApProb = 1;
+                    if (rpInfoSrc.get(apName)!=null)
+                    thisApProb = 1 / Math.sqrt(2 * Math.PI * eachAp.getApNameVar()) * Math.pow(E, -Math.pow(rpInfoSrc.get(apName) - eachAp.getApNameAvg(), 2) / (2 * eachAp.getApNameVar()));
                     eachPointProb *= thisApProb;
                 }
                 candidateLocEntity.setPoint_name(pointName);

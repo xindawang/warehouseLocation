@@ -11,7 +11,6 @@ import java.util.List;
  * Created by ACER on 2017/11/3.
  */
 
-//@Repository
 @Mapper
 public interface DeviceMapper {
     @Select("select * from device_info")

@@ -1,5 +1,6 @@
 package com.example.fnweb.Controller;
 
+import com.example.fnweb.Entity.AlgorithmEnum;
 import com.example.fnweb.Entity.ApEntity;
 import com.example.fnweb.Entity.DeviceEntity;
 import com.example.fnweb.Entity.RpEntity;
@@ -61,13 +62,30 @@ public class DataController {
         JSONObject json = JSONObject.fromObject(message);
         RpEntity rpEntity = new RpEntity();
         HashMap<String,Double> apentities = new HashMap<>();
-        apentities.put("ap1",Double.valueOf(json.getString("ap1")));
-        apentities.put("ap2",Double.valueOf(json.getString("ap2")));
-        apentities.put("ap3",Double.valueOf(json.getString("ap3")));
-        apentities.put("ap4",Double.valueOf(json.getString("ap4")));
-        apentities.put("ap5",Double.valueOf(json.getString("ap5")));
+        if (json.keySet().contains("ap1")) apentities.put("ap1",Double.valueOf(json.getString("ap1")));
+        if (json.keySet().contains("ap2")) apentities.put("ap2",Double.valueOf(json.getString("ap2")));
+        if (json.keySet().contains("ap3")) apentities.put("ap3",Double.valueOf(json.getString("ap3")));
+        if (json.keySet().contains("ap4")) apentities.put("ap4",Double.valueOf(json.getString("ap4")));
+        if (json.keySet().contains("ap5")) apentities.put("ap5",Double.valueOf(json.getString("ap5")));
         rpEntity.setApEntities(apentities);
-        knnService.getLocByKnnAbsolute(rpEntity);
+        if (json.keySet().contains("algorithm")) {
+            switch (json.getString("algorithm")) {
+                case "knnRelative":
+                    knnService.getLocByKnnRelative(rpEntity);
+                    break;
+                case "bayesAbsolute":
+                    naiveBayesService.getLocByBayesAbsolute(rpEntity);
+                    break;
+                case "bayesRelative":
+                    naiveBayesService.getLocByBayesRelative(rpEntity);
+                    break;
+                default:
+                    knnService.getLocByKnnAbsolute(rpEntity);
+                    break;
+            }
+        }else{
+            knnService.getLocByKnnAbsolute(rpEntity);
+        }
 
         if (lastEntityString == null){
             lastEntityString =  rpEntity.getLocString();
@@ -133,7 +151,9 @@ public class DataController {
     @RequestMapping(value = "/clearAllRecord",method = RequestMethod.GET)
     public String clearAllRecord(){
         allRecord.clear();
-        return "success";
+        resultEntityString = null;
+        lastEntityString =null;
+        return "清空完毕！";
     }
 
     @ResponseBody

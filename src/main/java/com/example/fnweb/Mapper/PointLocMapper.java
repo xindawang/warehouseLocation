@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by ACER on 2017/11/30.
  */
-//@Repository
+
 @Mapper
 public interface PointLocMapper {
     @Select("select * from point_loc where point_name=#{pointName}")

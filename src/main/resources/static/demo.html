@@ -39,8 +39,7 @@
             var stompClient = Stomp.over(socket);
 
             stompClient.connect({}, function () {
-                //console.log('开始连接')
-                alert("开始连接")
+                console.log('开始连接')
                 stompClient.subscribe('/warehouse/loc', function (result) {
                     $("#locationIcon").remove();
                     var loc = result.body.split(",");
@@ -53,8 +52,7 @@
             var stompClient2 = Stomp.over(pathSocket);
 
             stompClient2.connect({}, function () {
-                //console.log('开始连接')
-                alert("开始连接")
+                console.log('开始连接')
                 stompClient2.subscribe('/warehouse/path', function (result) {
                     var loc = result.body.split(",");
                     dynamicDrawLine(parseInt(loc[0]),parseInt(loc[1]),parseInt(loc[2]),parseInt(loc[3]));

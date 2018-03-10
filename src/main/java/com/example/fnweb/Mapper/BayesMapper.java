@@ -9,7 +9,6 @@ import java.util.List;
 /**
  * Created by ACER on 2017/11/30.
  */
-//@Repository
 @Mapper
 public interface BayesMapper {
     @Select("select count(id) from ${tableName} where point_name = #{pointName}")

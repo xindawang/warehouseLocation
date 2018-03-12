@@ -35,7 +35,7 @@ public class KNNService {
     @Autowired
     private BayesMapper bayesMapper;
 
-    private int k = 3;
+    private int k = 5;
 
     private int apAmount=5;
 
@@ -208,18 +208,33 @@ public class KNNService {
     }
 
     //计算误差
-    public void getPrecision(String tableName,String filename,int pointCount,int repeatTimes){
+    public void getPrecision(String filename,int pointCount,int repeatTimes){
         List<RpEntity> rpList = RssiTool.getRssiEntityFromTxt(filename,repeatTimes);
         float horizontalDeviation = 0;
         float verticalDeviation = 0;
         PointLocEntity pointLocEntity;
+        int numberCount =1;
+        double eachNumberHorizontalDeviation = 0;
+        double eachNumberVerticalDeviation = 0;
         for (int i = 0; i < pointCount*repeatTimes; i++) {
-            getLocByKnn(rpList.get(i),tableName);
-            pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i/repeatTimes).getPoint());
-            horizontalDeviation += rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx();
-            verticalDeviation += rpList.get(i).getToppx()-pointLocEntity.getToppx();
+            getLocByKnnRelative(rpList.get(i));
+            System.out.println(rpList.get(i).getLocString());
+            pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i).getPoint());
+            horizontalDeviation += Math.abs(rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx());
+            verticalDeviation += Math.abs(rpList.get(i).getToppx()-pointLocEntity.getToppx());
+
+            eachNumberHorizontalDeviation += Math.abs(rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx());
+            eachNumberVerticalDeviation += Math.abs(rpList.get(i).getToppx()-pointLocEntity.getToppx());
+
+            if ((i+1)%19==0){
+                System.err.print((i+1)/19+" ");
+                System.err.print(Math.abs(eachNumberHorizontalDeviation/repeatTimes)/24.8+" ");
+                System.err.println(Math.abs(eachNumberVerticalDeviation/repeatTimes)/30);
+                eachNumberHorizontalDeviation = 0;
+                eachNumberVerticalDeviation = 0;
+            }
         }
-        System.out.println(Math.abs(horizontalDeviation/pointCount/repeatTimes));
-        System.out.println(Math.abs(verticalDeviation/pointCount/repeatTimes));
+        System.err.println(Math.abs(horizontalDeviation/pointCount/repeatTimes));
+        System.err.println(Math.abs(verticalDeviation/pointCount/repeatTimes));
     }
 }

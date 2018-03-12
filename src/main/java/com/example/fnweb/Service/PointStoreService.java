@@ -91,6 +91,29 @@ public class PointStoreService {
         return true;
     }
 
+    public void insertScreenshotLoc(){
+        PointLocEntity pointLocEntity;
+        for (int i = 1; i < 75; i++) {
+            pointLocEntity = new PointLocEntity();
+            if (i<51) {
+                pointLocEntity.setPoint_name("h" + i);
+                pointLocEntity.setLeftpx((int)Math.round(1215.8 - (i - 1) * 24.8));
+                pointLocEntity.setToppx(420);
+            }else if (i<63){
+                pointLocEntity.setPoint_name("rv" + (i-50));
+                pointLocEntity.setLeftpx(660);
+                pointLocEntity.setToppx(400-(i-51)*30);
+            }else{
+                pointLocEntity.setPoint_name("lv" + (i-62));
+                pointLocEntity.setLeftpx(1020);
+                pointLocEntity.setToppx(400-(i-63)*30);
+            }
+            System.out.println(pointLocEntity.getPoint_name()+" "
+                    + pointLocEntity.getLeftpx()+" "+ pointLocEntity.getToppx());
+            pointLocMapper.insertTestLoc(pointLocEntity);
+        }
+    }
+
     public void insertTestLoc(){
         PointLocEntity pointLocEntity;
         for (int i = 1; i < 75; i++) {

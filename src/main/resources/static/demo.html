@@ -16,9 +16,6 @@
 
     </div>
 
-    <div id="show">
-
-    </div>
 
 </body>
 <script src="lib/jquery-2.1.4.min.js"></script>
@@ -181,8 +178,8 @@
             curLeft = startLeft;
             curTop = startTop;
 
-            moveLeft = (endLeft-startLeft)/100;
-            moveTop = (endTop-startTop)/100;
+            moveLeft = endLeft-startLeft>0?1:-1;
+            moveTop = endTop-startTop>0?1:-1;
 
             drawPoint(startLeft,startTop);
             context.moveTo(ml(startLeft),mt(startTop));

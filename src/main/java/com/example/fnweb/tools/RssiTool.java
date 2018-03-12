@@ -67,7 +67,7 @@ public class RssiTool {
                 int index = count/repeatTimes+1;
                 if (index < 51) rpEntity.setPoint("h"+index);
                 else if (index < 63) rpEntity.setPoint("rv"+(index-50));
-                else rpEntity.setPoint("lv"+(count-62));
+                else rpEntity.setPoint("lv"+(index-62));
                 rpEntity.setApEntities(apEntities);
                 rpEntities.add(rpEntity);
                 str = br.readLine();

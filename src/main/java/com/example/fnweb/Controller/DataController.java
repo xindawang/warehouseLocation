@@ -70,13 +70,13 @@ public class DataController {
         rpEntity.setApEntities(apentities);
         if (json.keySet().contains("algorithm")) {
             switch (json.getString("algorithm")) {
-                case "knnRelative":
+                case "1":
                     knnService.getLocByKnnRelative(rpEntity);
                     break;
-                case "bayesAbsolute":
+                case "2":
                     naiveBayesService.getLocByBayesAbsolute(rpEntity);
                     break;
-                case "bayesRelative":
+                case "3":
                     naiveBayesService.getLocByBayesRelative(rpEntity);
                     break;
                 default:

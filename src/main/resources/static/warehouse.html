@@ -5,27 +5,62 @@
     <title>成仓</title>
 </head>
 <body>
-    <div id="background">
-        <img id="demo" hidden src="image/warehouse.png" width="95%" height="95%" style="position: absolute; z-index: -1">
-        <!--<img src="image/location.png" width="64" height="64" style="margin-left:745px;margin-top:380px">-->
-        <canvas id="canvas" style="position: absolute; z-index: -1;">您当前的版本不支持</canvas>
+<div id="background">
+    <img id="demo" hidden src="image/warehouse.png" width="95%" height="95%" style="position: absolute; z-index: -1">
+    <!--<img src="image/location.png" width="64" height="64" style="margin-left:745px;margin-top:380px">-->
+    <canvas id="canvas" style="position: absolute; z-index: -1;">您当前的版本不支持</canvas>
 
-        <input id="viewLoc" type="button" class="btn btn-primary" value="查看位置" style="margin-left: 400px;margin-top: 30px;position: absolute; z-index: 1;" >
-        <input id="viewPath" type="button" class="btn btn-primary" value="查看路径" style="margin-left: 600px;margin-top: 30px;position: absolute; z-index: 1;" >
-        <input id="clearData" type="button" class="btn btn-primary" value="清空数据" style="margin-left: 800px;margin-top: 30px;position: absolute; z-index: 1;" >
+    <input id="viewLoc" type="button" class="btn btn-primary" value="查看位置" style="margin-left: 400px;margin-top: 30px;position: absolute; z-index: 1;" >
+    <input id="viewPath" type="button" class="btn btn-primary" value="查看路径" style="margin-left: 600px;margin-top: 30px;position: absolute; z-index: 1;" >
+    <input id="clearData" type="button" class="btn btn-primary" value="清空数据" style="margin-left: 800px;margin-top: 30px;position: absolute; z-index: 1;" >
 
-    </div>
+</div>
+
 
 
 </body>
 <script src="lib/jquery-2.1.4.min.js"></script>
 <script src="lib/bootstrap.min.js"></script>
+<script type="text/javascript" src="lib/sockjs-0.3.4.min.js"></script>
+<script type="text/javascript" src="lib/stomp.min.js"></script>
 <link type="text/css" href="lib/bootstrap.min.css" rel="stylesheet">
 <script src="lib/fengmap.min.js"></script>
 <script>
     $(function () {
 
         initCanvas();
+
+        websocketInit()//建立websocket连接
+
+        function websocketInit() {
+            var socket = new SockJS('/endpointWifi');
+            var stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function () {
+                console.log('开始连接')
+                stompClient.subscribe('/warehouse/loc', function (result) {
+                    $("#locationIcon").remove();
+                    var loc = result.body.split(",");
+                    $("#background").append('<img id="locationIcon" src="image/location.png" width="64" height="64" style="margin-left:'+loc[0]+'px;margin-top: '+loc[1]+'px">')
+
+                });
+            })
+
+            var pathSocket = new SockJS('/endpointPath');
+            var stompClient2 = Stomp.over(pathSocket);
+
+            stompClient2.connect({}, function () {
+                console.log('开始连接')
+                stompClient2.subscribe('/warehouse/path', function (result) {
+                    var loc = result.body.split(",");
+//                    dynamicDrawLine(parseInt(loc[0]),parseInt(loc[1]),parseInt(loc[2]),parseInt(loc[3]));
+                    drawPoint(parseInt(loc[0]),parseInt(loc[1]));
+                    drawLine(parseInt(loc[0]),parseInt(loc[1]),parseInt(loc[2]),parseInt(loc[3]));
+                    drawPoint(parseInt(loc[2]),parseInt(loc[3]));
+                });
+            })
+        }
+
 
         //查看位置
         $("#viewLoc").click(function(){
@@ -42,15 +77,15 @@
 
         $("#viewPath").click(function(){
             initCanvas();
-            $.ajax({
-                url: "/getAllRecord",
-                type: "get",
-                success: function (result) {
-                    console.log(result)
-                    handleResultArray(result)
-                }
-            });
-//            drawLine(30,120,1000,120);
+//            $.ajax({
+//                url: "/getAllRecord",
+//                type: "get",
+//                success: function (result) {
+//                    console.log(result)
+//                    handleResultArray(result)
+//                }
+//            });
+            drawLine(660,420,1020,100);
         });
 
         $("#clearData").click(function(){
@@ -105,6 +140,7 @@
 
         //初始化绘图参数，设置为全局
         var startLeft,startTop,endLeft,endTop,curLeft,curTop,moveLeft,moveTop,start;
+        var abLeft = 660, abTop = 420, acLeft = 1020, acTop = 420;
 
         //修正路线位置
         function ml(px){
@@ -124,7 +160,8 @@
             context.strokeStyle = "#2238f0"
             context.stroke();
 
-            if ((startLeft - endLeft) * (curLeft - endLeft)>0){
+            if ((startLeft - endLeft) * (curLeft - endLeft)>=0 &&
+                (startTop - endTop) * (curTop - endTop)>=0){
                 window.requestAnimationFrame(step);
             }else{
                 drawPoint(endLeft,endTop);
@@ -157,10 +194,28 @@
 
         function drawLine(sLeft,sTop,eLeft,eTop) {
             context.moveTo(ml(sLeft),mt(sTop));
+            var dis = getArea(sLeft,sTop)-getArea(eLeft,eTop);
+            if (dis == -3){
+                context.lineTo(ml(abLeft),mt(abTop));
+                context.lineTo(ml(acLeft),mt(acTop));
+            }else if (dis == 3){
+                context.lineTo(ml(acLeft),mt(acTop));
+                context.lineTo(ml(abLeft),mt(abTop));
+            }else if (Math.abs(dis) == 2){
+                context.lineTo(ml(acLeft),mt(acTop));
+            }else if (Math.abs(dis) == 1){
+                context.lineTo(ml(abLeft),mt(abTop));
+            }
             context.lineTo(ml(eLeft),mt(eTop));
             context.lineWidth = 4;//线条的宽度
-            context.strokeStyle = "#4cf03c"
+            context.strokeStyle = "#2238f0"
             context.stroke();
+        }
+
+        function getArea(left,top){
+            if (top>410) return 2;
+            else if (left>1000) return 4;
+            else return 1;
         }
 
     })

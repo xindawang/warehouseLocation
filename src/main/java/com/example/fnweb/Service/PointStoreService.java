@@ -59,6 +59,37 @@ public class PointStoreService {
         return true;
     }
 
+    public boolean changeToMinusRelativeValue(String filename){
+        try {
+            FileReader reader = new FileReader(filename);
+            BufferedReader br = new BufferedReader(reader);
+            String str = br.readLine();
+            while (str != null) {
+                String[] eachRpSet = str.split(";");
+                double minAbsValue = -200;
+                for (int i=0;i< eachRpSet.length;i++) {
+                    String[] eachAp = eachRpSet[i].split(" ");
+
+                    //rssi 值为负数
+                    if (Double.valueOf(eachAp[1])>minAbsValue) minAbsValue = Double.valueOf(eachAp[1]);
+                }
+                for (int i=0;i< eachRpSet.length;i++) {
+                    String[] eachAp = eachRpSet[i].split(" ");
+                    String relativeValue = String.format("%.2f", Double.valueOf(eachAp[1])-minAbsValue);
+                    System.out.print(eachAp[0]+" "+relativeValue+";");
+                }
+                System.out.println();
+                str = br.readLine();
+            }
+            br.close();
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return true;
+    }
+
     public boolean insertPointLoc(){
         try {
             FileReader reader = new FileReader(path);

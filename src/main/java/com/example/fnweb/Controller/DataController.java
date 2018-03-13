@@ -84,7 +84,7 @@ public class DataController {
                     break;
             }
         }else{
-            knnService.getLocByKnnAbsolute(rpEntity);
+//            knnService.getLocByKnnAbsolute(rpEntity);
         }
 
         if (lastEntityString == null){
@@ -169,7 +169,7 @@ public class DataController {
         rpEntity.setApEntities(apentities);
         if (apEntity.getAlgorithm()!=null) {
             if (apEntity.getAlgorithm().equals("knn")) {
-                knnService.getLocByKnnAbsolute(rpEntity);
+//                knnService.getLocByKnnAbsolute(rpEntity);
             }else if (apEntity.getAlgorithm()=="bayes") {
                 naiveBayesService.getLocByBayesAbsolute(rpEntity);
             }

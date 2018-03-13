@@ -29,8 +29,8 @@ public class FnwebApplicationTests {
 
 	@Test
 	public void getArgsFromData(){
-		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletRelative.txt";
-		System.out.println(naiveBayesService.getArgsFromData("",filename));
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletMinusRelative.txt";
+		System.out.println(naiveBayesService.getArgsFromData("tablet_minus_args",filename));
 	}
 
 
@@ -64,7 +64,7 @@ public class FnwebApplicationTests {
 		}
 
 		rpEntity.setApEntities(apentities);
-		knnService.getLocByKnnAbsolute(rpEntity);
+//		knnService.getLocByKnnAbsolute(rpEntity);
 //		knnService.getLocByKnnRelative(rpEntity);
 //		naiveBayesService.getLocByBayesAbsolute(rpEntity);
 //		naiveBayesService.getLocByBayesRelative(rpEntity);
@@ -93,13 +93,13 @@ public class FnwebApplicationTests {
 	public void getPrecision(){
 		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
 //		knnService.getPrecision(filename,74,19);
-		naiveBayesService.getPrecision("tablet_relative_args",filename,74,19);
+		naiveBayesService.getPrecision("tablet_args",filename,74,19);
 	}
 
 	@Test
 	public void changeToRelativeValue(){
 		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
-		pointStoreService.changeToRelativeValue(filename);
+		pointStoreService.changeToMinusRelativeValue(filename);
 	}
 
 

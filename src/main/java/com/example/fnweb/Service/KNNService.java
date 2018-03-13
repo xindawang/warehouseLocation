@@ -44,6 +44,9 @@ public class KNNService {
     private String data1 = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\1.txt";
     private String data2 = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\2.txt";
 
+    private String data = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
+
+
     //use relative value in knn method
     public void getLocByKnnAbsolute(RpEntity rpEntity){
         String tableName = "tablet_args";
@@ -54,7 +57,14 @@ public class KNNService {
     public void getLocByKnnRelative(RpEntity rpEntity){
         String tableName = "tablet_relative_args";
         RssiTool.changeAbsEntityToRel(rpEntity);
-        getLocByKnn(rpEntity,tableName);
+//        getLocByKnn(rpEntity,tableName);
+    }
+
+    //use relative value in knn method
+    public void getLocByKnnMinusRelative(RpEntity rpEntity){
+        String tableName = "tablet_minus_args";
+        RssiTool.changeAbsEntityToMinusRel(rpEntity);
+//        getLocByKnn(rpEntity,tableName);
     }
 
     public void getLocByKnn(RpEntity rpEntity,String tableName){
@@ -62,7 +72,11 @@ public class KNNService {
         //appoint the number of minimum AP point
 
         //get from txt
-//        List<RpEntity> rpList = getRssiEntityFromTxt(data1,data2);
+//        List<RpEntity> rpList = RssiTool.getRssiEntityFromTxt(data,19);
+//        rpList.remove(ii);
+//        List<RpEntity> rpListOfH = rpList.subList(0,948);
+//        List<RpEntity> rpListOfRv = rpList.subList(949,1176);
+//        List<RpEntity> rpListOfLv = rpList.subList(1177,1404);
 
         //get from database
         List<RpEntity> rpList = getRssiEntityFromDatabase(tableName);
@@ -217,7 +231,7 @@ public class KNNService {
         double eachNumberHorizontalDeviation = 0;
         double eachNumberVerticalDeviation = 0;
         for (int i = 0; i < pointCount*repeatTimes; i++) {
-            getLocByKnnRelative(rpList.get(i));
+            getLocByKnnAbsolute(rpList.get(i));
             System.out.println(rpList.get(i).getLocString());
             pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i).getPoint());
             horizontalDeviation += Math.abs(rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx());

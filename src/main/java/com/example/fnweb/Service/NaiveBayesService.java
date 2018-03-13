@@ -36,7 +36,7 @@ public class NaiveBayesService {
 
     private int apAmount = 5;
 
-    private int k = 5;;
+    private int k = 3;
 
     //get all the rssi of each ap in each point and calculate the average and variance
     @Transactional
@@ -75,8 +75,6 @@ public class NaiveBayesService {
         }else{
             if (!bayesMapper.insertBayesArgs(tableName,avgName,varName,pointName,average,variance)) return false;
         }
-
-        System.out.println(pointName+" "+avgName+" "+varName);
         return true;
     }
 
@@ -90,6 +88,12 @@ public class NaiveBayesService {
     public void getLocByBayesRelative(RpEntity rpEntity){
         String tableName = "tablet_relative_args";
         RssiTool.changeAbsEntityToRel(rpEntity);
+        getLocByBayes(rpEntity, tableName);
+    }
+
+    public void getLocByBayesMinusRelative(RpEntity rpEntity){
+        String tableName = "tablet_minus_args";
+        RssiTool.changeAbsEntityToMinusRel(rpEntity);
         getLocByBayes(rpEntity, tableName);
     }
 

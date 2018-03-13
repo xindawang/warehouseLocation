@@ -14,6 +14,21 @@ import java.util.List;
  * Created by ACER on 2018/3/8.
  */
 public class RssiTool {
+
+    public static void changeAbsEntityToMinusRel(RpEntity rpEntity){
+        HashMap<String,Double> apEntities = rpEntity.getApEntities();
+        double minAbsRssi = -200;
+        for (Double v : apEntities.values()){
+            if (v > minAbsRssi){
+                minAbsRssi = v;
+            }
+        }
+        for (String s : apEntities.keySet()){
+            apEntities.put(s,apEntities.get(s)-minAbsRssi);
+        }
+        rpEntity.setApEntities(apEntities);
+    }
+
     public static void changeAbsEntityToRel(RpEntity rpEntity){
         HashMap<String,Double> apEntities = rpEntity.getApEntities();
         double minAbsRssi = -200;

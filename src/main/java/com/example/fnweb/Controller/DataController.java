@@ -67,6 +67,9 @@ public class DataController {
         if (json.keySet().contains("ap3")) apentities.put("ap3",Double.valueOf(json.getString("ap3")));
         if (json.keySet().contains("ap4")) apentities.put("ap4",Double.valueOf(json.getString("ap4")));
         if (json.keySet().contains("ap5")) apentities.put("ap5",Double.valueOf(json.getString("ap5")));
+        if (json.keySet().contains("ap6")) apentities.put("ap6",Double.valueOf(json.getString("ap6")));
+        if (json.keySet().contains("ap7")) apentities.put("ap7",Double.valueOf(json.getString("ap7")));
+
         rpEntity.setApEntities(apentities);
         if (json.keySet().contains("algorithm")) {
             switch (json.getString("algorithm")) {

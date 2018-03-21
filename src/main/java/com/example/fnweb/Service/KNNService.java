@@ -49,7 +49,7 @@ public class KNNService {
 
     //use relative value in knn method
     public void getLocByKnnAbsolute(RpEntity rpEntity){
-        String tableName = "tablet_args";
+        String tableName = "tablet_new_args";
         getLocByKnn(rpEntity,tableName);
     }
 
@@ -191,7 +191,10 @@ public class KNNService {
             }
             if (commonCount>0) result /= commonCount;
             singleRp.setKnnResult(result);
-            if(curNum < k) minK[curNum++] = singleRp;
+            if(curNum < k){
+                minK[curNum++] = singleRp;
+                if (curNum == k) minK =maxHeapify(minK, 0, k-1);
+            }
             else if (singleRp.getKnnResult() < minK[0].getKnnResult()){
                 minK[0] = singleRp;
 

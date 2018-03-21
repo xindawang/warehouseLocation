@@ -29,6 +29,9 @@ public interface PointLocMapper {
     @Select("select distinct point_name from point_warehouse")
     List<String> getAllPointName();
 
+    @Select("select distinct point_name from point_warehouse where point_name LIKE 'h%'")
+    List<String> getHorizontalPointName();
+
     @Insert("insert into point_loc (point_name,x,y) values (#{point_name},#{x},#{y})")
     Boolean insertPointLoc(PointLocEntity pointLocEntity);
 

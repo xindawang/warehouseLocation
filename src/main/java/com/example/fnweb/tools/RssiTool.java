@@ -50,6 +50,8 @@ public class RssiTool {
         changeName.put("TP-LINK_E7D2", "ap3");
         changeName.put("TP-LINK_3625", "ap4");
         changeName.put("TP-LINK_3051", "ap5");
+        changeName.put("TP-LINK_35EB", "ap6");
+        changeName.put("TP-LINK_5958", "ap7");
         return changeName.get(oldName);
     }
 
@@ -60,6 +62,8 @@ public class RssiTool {
         changeName.put("TP-LINK_E7D2", "ap3");
         changeName.put("TP-LINK_3625", "ap4");
         changeName.put("TP-LINK_3051", "ap5");
+        changeName.put("TP-LINK_35EB", "ap6");
+        changeName.put("TP-LINK_5958", "ap7");
         return changeName;
     }
 

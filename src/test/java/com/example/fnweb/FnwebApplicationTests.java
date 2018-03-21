@@ -1,6 +1,7 @@
 package com.example.fnweb;
 
 import com.example.fnweb.Entity.RpEntity;
+import com.example.fnweb.Service.CNNPrepareService;
 import com.example.fnweb.Service.KNNService;
 import com.example.fnweb.Service.NaiveBayesService;
 import com.example.fnweb.Service.PointStoreService;
@@ -27,12 +28,26 @@ public class FnwebApplicationTests {
 	@Autowired
 	private NaiveBayesService naiveBayesService;
 
+    @Autowired
+    private CNNPrepareService cnnPrepareService;
+
 	@Test
 	public void getArgsFromData(){
-		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletMinusRelative.txt";
-		System.out.println(naiveBayesService.getArgsFromData("tablet_minus_args",filename));
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletNew.txt";
+		System.out.println(naiveBayesService.getArgsFromData("tablet_new_args",filename));
 	}
 
+	@Test
+	public void getArgsFromDir(){
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\pointDirHonor8";
+		System.out.println(naiveBayesService.getArgsFromDir("horizontal_honor",filename));
+	}
+
+    @Test
+    public void printArgsFromDir(){
+        String dirName = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\pointDir";
+        System.out.println(cnnPrepareService.getArgsFromDir(dirName));
+    }
 
 	@Test
 	public void insertPointLoc2(){
@@ -80,20 +95,22 @@ public class FnwebApplicationTests {
 		apentities.put("ap3",Double.valueOf(-44));
 		apentities.put("ap4",Double.valueOf(-43));
 		apentities.put("ap5",Double.valueOf(-47));
+		apentities.put("ap6",Double.valueOf(-43));
+		apentities.put("ap7",Double.valueOf(-47));
 		rpEntity.setApEntities(apentities);
-//		knnService.getLocByKnnAbsolute(rpEntity);
+		knnService.getLocByKnnAbsolute(rpEntity);
 //		knnService.getLocByKnnRelative(rpEntity);
 //		naiveBayesService.getLocByBayesAbsolute(rpEntity);
-		naiveBayesService.getLocByBayesRelative(rpEntity);
+//		naiveBayesService.getLocByBayesRelative(rpEntity);
 		System.out.println(rpEntity.getLocString());
 	}
 
 
 	@Test
 	public void getPrecision(){
-		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletPartNew.txt";
 //		knnService.getPrecision(filename,74,19);
-		naiveBayesService.getPrecision("tablet_args",filename,74,19);
+		naiveBayesService.getPrecision("horizontal_args",filename,50,19);
 	}
 
 	@Test
@@ -101,6 +118,8 @@ public class FnwebApplicationTests {
 		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\Tablet.txt";
 		pointStoreService.changeToMinusRelativeValue(filename);
 	}
+
+
 
 
 }

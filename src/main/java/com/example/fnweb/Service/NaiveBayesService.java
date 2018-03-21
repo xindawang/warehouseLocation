@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 import static java.lang.Math.E;
@@ -34,7 +31,7 @@ public class NaiveBayesService {
     @Autowired
     private RssiMapper rssiMapper;
 
-    private int apAmount = 5;
+    private int apAmount = 7;
 
     private int k = 3;
 
@@ -75,12 +72,13 @@ public class NaiveBayesService {
         }else{
             if (!bayesMapper.insertBayesArgs(tableName,avgName,varName,pointName,average,variance)) return false;
         }
+        System.out.println(pointName +" "+apName+" " +average+" " +variance);
         return true;
     }
 
     //use absolute value in bayes method
     public void getLocByBayesAbsolute(RpEntity rpEntity){
-        String tableName = "tablet_args";
+        String tableName = "tablet_new_args";
         getLocByBayes(rpEntity, tableName);
     }
 
@@ -97,21 +95,32 @@ public class NaiveBayesService {
         getLocByBayes(rpEntity, tableName);
     }
 
+    public void getLocByBayesPart(RpEntity rpEntity){
+        String tableName = "tablet_part";
+        getLocByBayes(rpEntity, tableName);
+    }
+
+    public void getLocByBayesPartNew(RpEntity rpEntity){
+        String tableName = "tablet_part_new";
+        getLocByBayes(rpEntity, tableName);
+    }
+
+
     public void getLocByBayes(RpEntity rpEntity, String tableName){
 
         //initialize the input data
         HashMap<String, Double> rpInfoSrc = rpEntity.getApEntities();
 
         //get ratio and location info of each point and add up for the result
-        PointLocEntity[] maxKEntitiesH = getKPointsWithHighestProb(tableName,rpInfoSrc,1,50);
-        PointLocEntity[] maxKEntitiesRv = getKPointsWithHighestProb(tableName,rpInfoSrc,51,62);
-        PointLocEntity[] maxKEntitiesLv = getKPointsWithHighestProb(tableName,rpInfoSrc,63,74);
+        PointLocEntity[] maxKEntities = getKPointsWithHighestProb(tableName,rpInfoSrc,1,50);
+//        PointLocEntity[] maxKEntitiesRv = getKPointsWithHighestProb(tableName,rpInfoSrc,51,62);
+//        PointLocEntity[] maxKEntitiesLv = getKPointsWithHighestProb(tableName,rpInfoSrc,63,74);
 
-        List<PointLocEntity[]> pointLocEntities = new ArrayList<>();
-        pointLocEntities.add(maxKEntitiesH);
-        pointLocEntities.add(maxKEntitiesRv);
-        pointLocEntities.add(maxKEntitiesLv);
-        PointLocEntity[] maxKEntities = getMaxGroup(pointLocEntities);
+//        List<PointLocEntity[]> pointLocEntities = new ArrayList<>();
+//        pointLocEntities.add(maxKEntitiesH);
+//        pointLocEntities.add(maxKEntitiesRv);
+//        pointLocEntities.add(maxKEntitiesLv);
+//        PointLocEntity[] maxKEntities = getMaxGroup(pointLocEntities);
 
         double sum = 0,x=0,y=0;
         for (int i = 0; i < maxKEntities.length; i++){
@@ -209,8 +218,11 @@ public class NaiveBayesService {
                     String[] eachRpSet = str.split(";");
                     for (int i = 0; i < eachRpSet.length; i++) {
                         String[] eachAp = eachRpSet[i].split(" ");
-                        if (RssiTool.getNewName(eachAp[0]).equals(apName))
+                        if (RssiTool.getNewName(eachAp[0]).equals(apName)){
                             eachApData.add(Double.valueOf(eachAp[1]));
+                            break;
+                        }
+
                     }
                 }
                 str = br.readLine();
@@ -235,7 +247,7 @@ public class NaiveBayesService {
         double eachNumberHorizontalDeviation = 0;
         double eachNumberVerticalDeviation = 0;
         for (int i = 0; i < pointCount*repeatTimes; i++) {
-            getLocByBayesAbsolute(rpList.get(i));
+            getLocByBayes(rpList.get(i),"horizontal_args");
             System.out.println(rpList.get(i).getLocString());
             pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i).getPoint());
             horizontalDeviation += Math.abs(rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx());
@@ -252,8 +264,72 @@ public class NaiveBayesService {
                 eachNumberVerticalDeviation = 0;
             }
         }
-        System.err.println(Math.abs(horizontalDeviation/pointCount/repeatTimes));
-        System.err.println(Math.abs(verticalDeviation/pointCount/repeatTimes));
+        System.err.println(Math.abs(horizontalDeviation/pointCount/repeatTimes/24.8));
+        System.err.println(Math.abs(verticalDeviation/pointCount/repeatTimes/30));
     }
 
+    public boolean getArgsFromDir(String tableName, String filename) {
+        List<String> allPoints = pointLocMapper.getHorizontalPointName();
+        List<String> fileList = traverseFolder(filename);
+        int rpCurCount = 1;
+        for (String str : allPoints) {
+            for (int i = 1; i <= apAmount; i++) {
+                String apName = "ap"+i;
+//                List<Double> eachApData = rssiMapper.getEachApRssiByPointName(apName,str);
+                List<Double> eachApData = getApRssiOfRpFromTxt(fileList.get((rpCurCount+30)%50),apName);
+                if (!computeAndInsertGaussArgs(tableName,eachApData,str,apName)) return false;
+//                System.out.println(eachApData);
+            }
+            rpCurCount++;
+        }
+        return true;
+    }
+
+    private List<Double> getApRssiOfRpFromTxt(String filename, String apName) {
+        List<Double> eachApData= new ArrayList<>();
+        try {
+            FileReader reader = new FileReader(filename);
+            BufferedReader br = new BufferedReader(reader);
+            br.readLine();
+            String str = br.readLine();
+            while (str != null) {
+                String[] eachRpSet = str.split(";");
+                for (int i = 0; i < eachRpSet.length; i++) {
+                    String[] eachAp = eachRpSet[i].split(" ");
+                    if (RssiTool.getNewName(eachAp[0]).equals(apName)){
+                        eachApData.add(Double.valueOf(eachAp[1]));
+                        break;
+                    }
+
+                }
+                br.readLine();
+                br.readLine();
+                str = br.readLine();
+            }
+            br.close();
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return eachApData;
+    }
+
+    public List<String> traverseFolder(String path) {
+        File dir = new File(path);
+        List<String> fileList = new ArrayList<>();
+        if (dir.exists()) {
+            File[] files = dir.listFiles();
+            if (files.length == 0) {
+                System.out.println("文件夹是空的!");
+            } else {
+                for (File file : files) {
+                   fileList.add(file.getAbsolutePath());
+                }
+            }
+        } else {
+            System.out.println("文件不存在!");
+        }
+        return fileList;
+    }
 }

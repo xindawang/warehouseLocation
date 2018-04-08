@@ -33,8 +33,8 @@ public class FnwebApplicationTests {
 
 	@Test
 	public void getArgsFromData(){
-		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletNew.txt";
-		System.out.println(naiveBayesService.getArgsFromData("tablet_new_args",filename));
+		String filename = "C:\\Users\\ACER\\Desktop\\捷众项目\\第三批\\relative.txt";
+		System.out.println(naiveBayesService.getArgsFromData("tablet_zhang_args",filename));
 	}
 
 	@Test
@@ -108,9 +108,16 @@ public class FnwebApplicationTests {
 
 	@Test
 	public void getPrecision(){
-		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\TabletPartNew.txt";
-//		knnService.getPrecision(filename,74,19);
-		naiveBayesService.getPrecision("horizontal_args",filename,50,19);
+		String filename = "C:\\Users\\ACER\\Desktop\\捷众项目\\第三批\\relative.txt";
+		//		knnService.getPrecision(filename,74,19);
+		naiveBayesService.getPrecision("tablet_zhang_args",filename,50,19);
+	}
+
+	@Test
+	public void getTestPrecision(){
+		String filename = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\allRecord.txt";
+		//		knnService.getPrecision(filename,74,19);
+		naiveBayesService.getRandPrecision("horizontal_args",filename,1000);
 	}
 
 	@Test
@@ -119,7 +126,11 @@ public class FnwebApplicationTests {
 		pointStoreService.changeToMinusRelativeValue(filename);
 	}
 
-
+	@Test
+	public void dirChangeToRelativeValue(){
+		String dirName = "E:\\IndoorLocation\\warehouseLocation\\src\\main\\resources\\static\\data\\projectSrc\\pointDir";
+		pointStoreService.dirChangeToRelativeValue(dirName);
+	}
 
 
 }

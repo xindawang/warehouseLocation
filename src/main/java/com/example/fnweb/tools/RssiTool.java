@@ -43,6 +43,16 @@ public class RssiTool {
         rpEntity.setApEntities(apEntities);
     }
 
+    public static void setRssiInRpEntity(RpEntity rpEntity,String str){
+        HashMap<String, Double> apEntities = new HashMap<>();
+        String[] eachRpSet = str.split(";");
+        for (int i=0;i< eachRpSet.length;i++) {
+            String[] eachAp = eachRpSet[i].split(" ");
+            apEntities.put(RssiTool.getNewName(eachAp[0]),Double.valueOf(eachAp[1]));
+        }
+        rpEntity.setApEntities(apEntities);
+    }
+
     public static String getNewName(String oldName){
         HashMap<String, String> changeName = new HashMap<>();
         changeName.put("Four-Faith-2", "ap1");

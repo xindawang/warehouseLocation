@@ -6,6 +6,7 @@ import com.example.fnweb.Entity.RpEntity;
 import com.example.fnweb.Mapper.BayesMapper;
 import com.example.fnweb.Mapper.PointLocMapper;
 import com.example.fnweb.Mapper.RssiMapper;
+import com.example.fnweb.tools.FileTool;
 import com.example.fnweb.tools.RssiTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,8 @@ public class NaiveBayesService {
     @Transactional
     public boolean getArgsFromData(String tableName,String filename){
 
-        List<String> allPoints = pointLocMapper.getAllPointName();
+//        List<String> allPoints = pointLocMapper.getAllPointName();
+        List<String> allPoints = pointLocMapper.getHorizontalPointName();
         int rpCurCount = 1;
         for (String str : allPoints) {
             for (int i = 1; i <= apAmount; i++) {
@@ -78,13 +80,13 @@ public class NaiveBayesService {
 
     //use absolute value in bayes method
     public void getLocByBayesAbsolute(RpEntity rpEntity){
-        String tableName = "tablet_new_args";
+        String tableName = "horizontal_args";
         getLocByBayes(rpEntity, tableName);
     }
 
     //use relative value in bayes method
     public void getLocByBayesRelative(RpEntity rpEntity){
-        String tableName = "tablet_relative_args";
+        String tableName = "horizontal_relative";
         RssiTool.changeAbsEntityToRel(rpEntity);
         getLocByBayes(rpEntity, tableName);
     }
@@ -237,6 +239,41 @@ public class NaiveBayesService {
         return eachApData;
     }
 
+    //计算随机数据误差
+    public void getRandPrecision(String tableName,String filename,int count){
+        double horizontalDeviation = 0;
+        double verticalDeviation = 0;
+        PointLocEntity pointLocEntity;
+        int numberCount =1;
+        double allHorizontalDeviation = 0;
+        double allVerticalDeviation = 0;
+
+        for (int i = 0; i < count; i++) {
+            int j = (int) (Math.random()*5000);
+            String str = getRandomRecordFromTxt(filename,j);
+            if (str.equals("")) return;
+            RpEntity rpEntity = new RpEntity();
+            RssiTool.setRssiInRpEntity(rpEntity,str);
+            getLocByBayesAbsolute(rpEntity);
+            pointLocEntity = pointLocMapper.getTestLocInfoByName("h"+(j/100+1));
+
+
+            horizontalDeviation = Math.abs(rpEntity.getLeftpx()-pointLocEntity.getLeftpx());
+            verticalDeviation = Math.abs(rpEntity.getToppx()-pointLocEntity.getToppx());
+
+            allHorizontalDeviation += horizontalDeviation;
+            allVerticalDeviation += verticalDeviation;
+
+
+            System.out.print((i+1)+" ");
+            System.out.print(Math.abs(horizontalDeviation/24.8)+" ");
+            System.out.println(Math.abs(verticalDeviation/30));
+        }
+
+        System.err.println(Math.abs(allHorizontalDeviation/count/24.8));
+        System.err.println(Math.abs(allHorizontalDeviation/count/30));
+    }
+
     //计算误差
     public void getPrecision(String tableName,String filename,int pointCount,int repeatTimes){
         List<RpEntity> rpList = RssiTool.getRssiEntityFromTxt(filename,repeatTimes);
@@ -247,8 +284,8 @@ public class NaiveBayesService {
         double eachNumberHorizontalDeviation = 0;
         double eachNumberVerticalDeviation = 0;
         for (int i = 0; i < pointCount*repeatTimes; i++) {
-            getLocByBayes(rpList.get(i),"horizontal_args");
-            System.out.println(rpList.get(i).getLocString());
+            getLocByBayes(rpList.get(i),"tablet_zhang_args");
+//            System.out.println(rpList.get(i).getLocString());
             pointLocEntity = pointLocMapper.getTestLocInfoByName(rpList.get(i).getPoint());
             horizontalDeviation += Math.abs(rpList.get(i).getLeftpx()-pointLocEntity.getLeftpx());
             verticalDeviation += Math.abs(rpList.get(i).getToppx()-pointLocEntity.getToppx());
@@ -270,7 +307,7 @@ public class NaiveBayesService {
 
     public boolean getArgsFromDir(String tableName, String filename) {
         List<String> allPoints = pointLocMapper.getHorizontalPointName();
-        List<String> fileList = traverseFolder(filename);
+        List<String> fileList = FileTool.traverseFolder(filename);
         int rpCurCount = 1;
         for (String str : allPoints) {
             for (int i = 1; i <= apAmount; i++) {
@@ -283,6 +320,27 @@ public class NaiveBayesService {
             rpCurCount++;
         }
         return true;
+    }
+
+    private String getRandomRecordFromTxt(String filename, int target) {
+        String result = "";
+        try {
+            int curNum = 0;
+            FileReader reader = new FileReader(filename);
+            BufferedReader br = new BufferedReader(reader);
+            String str = br.readLine();
+            while (str != null&& curNum < target) {
+                str = br.readLine();
+                curNum++;
+            }
+            if (str != null) return str;
+            br.close();
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return "";
     }
 
     private List<Double> getApRssiOfRpFromTxt(String filename, String apName) {
@@ -315,21 +373,5 @@ public class NaiveBayesService {
         return eachApData;
     }
 
-    public List<String> traverseFolder(String path) {
-        File dir = new File(path);
-        List<String> fileList = new ArrayList<>();
-        if (dir.exists()) {
-            File[] files = dir.listFiles();
-            if (files.length == 0) {
-                System.out.println("文件夹是空的!");
-            } else {
-                for (File file : files) {
-                   fileList.add(file.getAbsolutePath());
-                }
-            }
-        } else {
-            System.out.println("文件不存在!");
-        }
-        return fileList;
-    }
+
 }

@@ -35,9 +35,9 @@ public class KNNService {
     @Autowired
     private BayesMapper bayesMapper;
 
-    private int k = 5;
+    private int k = 3;
 
-    private int apAmount=5;
+    private int apAmount=7;
 
     boolean useDatabase = false;
 
@@ -49,15 +49,15 @@ public class KNNService {
 
     //use relative value in knn method
     public void getLocByKnnAbsolute(RpEntity rpEntity){
-        String tableName = "tablet_new_args";
+        String tableName = "horizontal_args";
         getLocByKnn(rpEntity,tableName);
     }
 
     //use relative value in knn method
     public void getLocByKnnRelative(RpEntity rpEntity){
-        String tableName = "tablet_relative_args";
+        String tableName = "horizontal_relative";
         RssiTool.changeAbsEntityToRel(rpEntity);
-//        getLocByKnn(rpEntity,tableName);
+        getLocByKnn(rpEntity,tableName);
     }
 
     //use relative value in knn method
@@ -80,25 +80,25 @@ public class KNNService {
 
         //get from database
         List<RpEntity> rpList = getRssiEntityFromDatabase(tableName);
-        List<RpEntity> rpListOfH = rpList.subList(0,50);
-        List<RpEntity> rpListOfRv = rpList.subList(50,62);
-        List<RpEntity> rpListOfLv = rpList.subList(62,74);
-
-        RpEntity[] rpEntitiesH = getMinK(rpEntity,rpListOfH);
-        RpEntity[] rpEntitiesRv = getMinK(rpEntity,rpListOfRv);
-        RpEntity[] rpEntitiesLv = getMinK(rpEntity,rpListOfLv);
+//        List<RpEntity> rpListOfH = rpList.subList(0,50);
+//        List<RpEntity> rpListOfRv = rpList.subList(50,62);
+//        List<RpEntity> rpListOfLv = rpList.subList(62,74);
+//
+        RpEntity[] rpEntitiesH = getMinK(rpEntity,rpList);
+//        RpEntity[] rpEntitiesRv = getMinK(rpEntity,rpListOfRv);
+//        RpEntity[] rpEntitiesLv = getMinK(rpEntity,rpListOfLv);
 
         RpEntity[] rpEntities;
 
-        List<RpEntity[]> rpListEntities = new ArrayList<>();
-        rpListEntities.add(rpEntitiesRv);
-        rpListEntities.add(rpEntitiesLv);
-
+//        List<RpEntity[]> rpListEntities = new ArrayList<>();
+//        rpListEntities.add(rpEntitiesRv);
+//        rpListEntities.add(rpEntitiesLv);
+//
         rpEntities = rpEntitiesH;
-        for (RpEntity[] r:rpListEntities) {
-            if (getDif(r,rpEntity)< getDif(rpEntities,rpEntity))
-            rpEntities = r;
-        }
+//        for (RpEntity[] r:rpListEntities) {
+//            if (getDif(r,rpEntity)< getDif(rpEntities,rpEntity))
+//            rpEntities = r;
+//        }
 
         PointLocEntity[] pointLocEntities = getRelPointInfo(rpEntities);
         double sum = 0, x=0, y=0;

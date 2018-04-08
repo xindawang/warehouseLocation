@@ -16,9 +16,30 @@ public class CNNPrepareService {
     public boolean getArgsFromDir(String dirName) {
         List<String> fileList = traverseFolder(dirName);
         for (int i = 0; i < 50; i++){
-            getApRssiOfRpFromTxt(fileList.get((i+31)%50),i);
+            getApRssiOfRpFromTxt(fileList.get((i+31)%50),i,true);
         }
         return true;
+    }
+
+    private void getApRssiOfRpFromTxt(String filename, int i ,boolean combine) {
+        HashMap<String, Integer> eachApData = new HashMap<>();
+        try {
+            FileReader reader = new FileReader(filename);
+            BufferedReader br = new BufferedReader(reader);
+            br.readLine();
+            String str = br.readLine();
+            while (str != null) {
+                System.out.println(str);
+                br.readLine();
+                br.readLine();
+                str = br.readLine();
+            }
+            br.close();
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void getApRssiOfRpFromTxt(String filename, int i) {

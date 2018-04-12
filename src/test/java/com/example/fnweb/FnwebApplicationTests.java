@@ -1,10 +1,7 @@
 package com.example.fnweb;
 
 import com.example.fnweb.Entity.RpEntity;
-import com.example.fnweb.Service.CNNPrepareService;
-import com.example.fnweb.Service.KNNService;
-import com.example.fnweb.Service.NaiveBayesService;
-import com.example.fnweb.Service.PointStoreService;
+import com.example.fnweb.Service.*;
 import com.example.fnweb.tools.RssiTool;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +27,9 @@ public class FnwebApplicationTests {
 
     @Autowired
     private CNNPrepareService cnnPrepareService;
+
+	@Autowired
+	private KMeansService kMeansService;
 
 	@Test
 	public void getArgsFromData(){
@@ -132,5 +132,10 @@ public class FnwebApplicationTests {
 		pointStoreService.dirChangeToRelativeValue(dirName);
 	}
 
+	@Test
+	public void getKmeansResult(){
+		kMeansService.init();
+		kMeansService.moveCore();
+	}
 
 }

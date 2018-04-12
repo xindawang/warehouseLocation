@@ -12,6 +12,16 @@ public class RpEntity {
     private String point_name;
     private Double knnResult;
     private Integer leftpx;
+    private Integer toppx;
+    private int kmeansGroupNum;
+
+    public int getKmeansGroupNum() {
+        return kmeansGroupNum;
+    }
+
+    public void setKmeansGroupNum(int kmeansGroupNum) {
+        this.kmeansGroupNum = kmeansGroupNum;
+    }
 
     public Integer getLeftpx() {
         return leftpx;
@@ -28,8 +38,6 @@ public class RpEntity {
     public void setToppx(Integer toppx) {
         this.toppx = toppx;
     }
-
-    private Integer toppx;
 
     public Integer getId() {
         return id;
